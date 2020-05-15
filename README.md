@@ -1,5 +1,5 @@
 # ChipCytometry Image Processing
-Macros and codes from the publication "Publication"
+Macros and codes from the publication "Publication Jarosch et al"
 
 ![Image of Pipeline](url of image)
 
