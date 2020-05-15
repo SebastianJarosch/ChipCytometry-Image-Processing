@@ -1,4 +1,4 @@
-# Zellkraftwerk-Image-Processing
+# ChipCytometry Image Processing
 Macros and codes from the publication "Publication"
 
 ## System reqirements
