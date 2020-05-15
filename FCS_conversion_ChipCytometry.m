@@ -1,3 +1,6 @@
+% Code is adjusted from CycIF publication: Lin et al. Highly multiplexed immunofluorescence imaging of human tissues 
+% and tumors using t-CyCIF and conventional optical microscopes eLife (2018) DOI: 10.7554/eLife.31657
+
 %% Get filenames to open and export files
 filenameFL = 'FL_values.csv';
 filenameChannels = 'channels.csv';
