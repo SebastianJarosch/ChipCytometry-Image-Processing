@@ -23,10 +23,10 @@ b) Copy the Scanjob folders for each channel in a new directory named with the c
 c) Rename the scanjob folders with their channel names <br>
 
 ### 2. Data generation in ImageJ
-*Dependent on the size of a chip and the number of segmented cells, the spillover-correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the results first* <br><br>
+*Dependent on the size of a chip and the number of segmented cells, the spillover-correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the correctness of the input parameters first* <br><br>
 a) Run the script automatic_image_processing.ijm in ImageJ <br>
-b) specify the parameters and press OK <br>
-c) Adjust the lower threshold when you are asked to <br>
+b) Select channels and specify the parameters and press OK <br>
+c) Adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining<br>
 
 ### 3. Write FCS files in MATLAB
 a) Copy the FL_values.csv and channels.csv from the generated Results folder in your MATLAB working directory <br>
@@ -37,7 +37,7 @@ Scanpy was developed by the Theis Lab for analyzing scRNA sequencing data and is
 Besides this aproach we would also like to mention the cyt3 package as matlab GUI (https://github.com/dpeerlab/cyt3) from the Dana Pe'er Lab which was developed for the analysis of MassCytometry data and allows clustering of cells from the csv generated in matlab before
 
 ## References
-1.
-2.
+1. Wolf, F., Angerer, P. & Theis, F. SCANPY: large-scale single-cell gene expression data analysis. Genome Biol 19, 15 (2018). https://doi.org/10.1186/s13059-017-1382-0
+2. Schindelin, J., Arganda-Carreras, I., Frise, E. et al. Fiji: an open-source platform for biological-image analysis. Nat Methods 9, 676–682 (2012). https://doi.org/10.1038/nmeth.2019
 3.
 4.
