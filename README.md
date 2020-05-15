@@ -1,11 +1,12 @@
 # ChipCytometry Image Processing
 Macros and codes from the publication "Publication"
 
+![Image of Pipeline](url of image)
 
 ## System reqirements
 * ImageJ 1.52e or higher <br>
 * Matlab 2018b or higher <br>
-* Python3.7
+* Python3.7+ for clustering and neighborhood analysis
 
 ## Third party packages, plugins and scripts
 * Scanpy (https://github.com/theislab/scanpy) <br>
