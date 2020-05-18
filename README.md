@@ -1,7 +1,7 @@
 # ChipCytometry Image Processing
 Macros and codes from the publication "Publication Jarosch et al"
 
-![Image of Pipeline](url of image)
+![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.tiff)
 
 ## System reqirements
 * ImageJ 1.52e or higher <br>
