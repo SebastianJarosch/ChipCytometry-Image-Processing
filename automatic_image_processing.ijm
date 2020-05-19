@@ -1,4 +1,5 @@
 //Run Script to enable y-Overlap in the stitching Plug-In
+//If you are running the script for the first time, you will be asked to restart imageJ
 eval("bsh", "plugin.Stitching_Grid.seperateOverlapY = true;");
  
 //choose the directory where the raw images are stored and results folder will be created
@@ -25,7 +26,7 @@ for (i = 0; i < markernumber; i++) {
 if(status!="analyzed"){
 	print("Number of markers found: "+markernumber);
 	
-	//get type of tissue to adjust parameters for analysis
+	//get type of tissue to adjust default parameters for analysis
 	Dialog.create("Select tissue type");
 	Dialog.addString('ChipID', ChipID)
 	organisms=newArray("human","mouse");
@@ -112,6 +113,7 @@ if(status!="analyzed"){
 	threshhold=Dialog.getNumber();
 	minCorrInt=Dialog.getNumber();
 	threshhold=threshhold/25;
+	error_cells=newArray();
 	
 	//Check for conistancy of positions between markers, using the segmentation marker as refference
 	segmentationmarkerpositions = getFileList(pathraw+"/"+segmentationmarker);
@@ -586,12 +588,9 @@ if(status!="analyzed"){
 	if (fail == true){
 		print("WARNING: Inconsistancy in markers detected !!!");
 	}
-	if (fail == false){
-		print("Images available for all markers and positions :)");
-	}
 	print("Size of the stiched image: "+xsize+" x "+ysize);
 	print("Number of the first image: "+firsttile);
-	print("Number of positions to be stitched: "+totalpositions);
+	print("Number of positions to be stitched: "+(xsize*ysize));
 	for (i = 0; i < markernumber; i++) {
 		if (marker[i] == 1) {
 			numberM = numberM+1;
@@ -625,6 +624,7 @@ if(status!="analyzed"){
 		print("Time for FL-value calculation: "+Tcalculation+" s");
 		if (spillovercorrection == 1) {
 			print("spatial spillover corrected for cells with more than "+(threshhold*25)+" % signal per quadrant");
+			print("corrected were cells with a grayscale value higher than "+minCorrInt);
 			if(error_cells.length > 0){
 				print(error_cells.length+" cells yielded an error due to their shape");
 			}
