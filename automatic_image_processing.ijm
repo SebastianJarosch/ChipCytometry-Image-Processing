@@ -366,6 +366,11 @@ if(status!="analyzed"){
 			
 			//Enlarge crypts by 5 pixel and combine to one ROI
 			counts=roiManager("count");
+			print(counts);
+			print("");
+			if (counts<=1){
+				exit("No crypts detected, please check your cytokeratine channel");
+			}
 			for(i=0; i<counts; i++) {
 			    roiManager("Select", i);
 			    run("Enlarge...", "enlarge=5 pixel");
@@ -375,9 +380,6 @@ if(status!="analyzed"){
 			}
 			roiManager("Select All");
 			roiManager("Combine");
-			if (roiManager("count")<1){
-				exit("No crypts detected, please check your cytokeratine channel");
-			}
 			roiManager("Add");
 			print("Crypts segmented");
 
