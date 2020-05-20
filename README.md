@@ -13,9 +13,9 @@ Macros and codes from the publication "Publication Jarosch et al..."
 * writeFCS (https://www.mathworks.com/matlabcentral/fileexchange/42603-writefcs-fname-data-text-other)
 
 ## Getting started
+* Install Fiji
 * Download the scripts from this repository
-* 
-*
+* transfer the matlab script as well as the writeFCS script in your matlab working directory
 
 ## Workflow
 ### 1. Image export
