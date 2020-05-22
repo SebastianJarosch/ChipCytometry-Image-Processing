@@ -42,9 +42,9 @@ if(status!="analyzed"){
 	//get size of the fused image and number of images
 	//Set if segmentation and FL-value calculation should be performed
 	Dialog.create("Automatic image processing");
-	Dialog.addNumber("grid_size_x", 6);
-	Dialog.addNumber("grid_size_y", 4);
-	Dialog.addNumber("first_tile", 1);
+	Dialog.addNumber("grid size x", 6);
+	Dialog.addNumber("grid size y", 4);
+	Dialog.addNumber("first tile", 1);
 	n=2*markernumber;
 	chbxlables = newArray(n);
 	defaults = newArray(n);
@@ -56,7 +56,7 @@ if(status!="analyzed"){
 	}
 	Dialog.addCheckboxGroup(markernumber, 2, chbxlables, defaults);
 	Dialog.addCheckbox("Segmentation ", true);
-	Dialog.addChoice("Channel for Segmentation", folders, "Nuclei");
+	Dialog.addChoice("Nuclei staining", folders, "Nuclei");
 	sepepithel=false;
 	
 	if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
@@ -67,14 +67,14 @@ if(status!="analyzed"){
 	if (tissue=="spleen/LN") {
 		ensize=2;
 	}
-	Dialog.addNumber("Number of pixels to ensize ROIs", ensize);
+	Dialog.addNumber("Enlarge ROIs by", ensize,0,1, "pixel");
 	Dialog.addCheckbox("FL-Value calculation ", true);
 	Dialog.addCheckbox("Correction for surface markers? ", true);
 	Dialog.addCheckbox("Check for consistancy over markers? ", true);
+	Dialog.addMessage('--------------------------------------')
 	Dialog.addCheckbox("Correct for spatial spillover? ", true);
-	Dialog.addMessage("Percentage of Signal which is allowed to come from one quater:")
-	Dialog.addSlider("Spillover correction threshold", 0, 100, 60);
-	Dialog.addNumber("Min intensity for a cell to be corrected", 100);
+	Dialog.addNumber("Threshold", 60);
+	Dialog.addNumber("Min intensity", 100);
 	Dialog.show();
 	
 	//Get values from the dialog
