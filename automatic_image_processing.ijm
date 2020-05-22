@@ -491,7 +491,8 @@ if(status!="analyzed"){
 
 				//Perform spillovercorrection for all cells 
 				if (spillovercorrection==true && intranuclear[i-1]!=true){
-					File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+folders[i-1]+"_excluded");
+					slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
+					File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
 					setBatchMode(true);
 					total_rois=roiManager("count");
 					error_cells=newArray();
@@ -561,11 +562,11 @@ if(status!="analyzed"){
 											run("Copy");
 											run("Internal Clipboard");
 											selectWindow("Clipboard");
-											saveAs("Tiff", finalimages+"segmentation/spatial_spillover_correction/"+folders[i-1]+"_excluded/"+(k+1)+"-excluded.tiff");
+											saveAs("Tiff", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.tiff");
 											close();
 											setBackgroundColor(0, 0, 0);
 											run("Clear", "slice");
-											roiManager("Save", finalimages+"segmentation/spatial_spillover_correction/"+folders[i-1]+"_excluded/"+(k+1)+"-excluded.roi");
+											roiManager("Save", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.roi");
 										}
 									}
 								}
