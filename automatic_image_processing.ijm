@@ -69,15 +69,15 @@ if(status!="analyzed"){
 	//Get values from the dialog
 	marker=newArray(markernumber);
 	intranuclear_0=newArray(markernumber);
-	markenumer_real=0;
+	markernumber_total=0;
 	for (i = 0; i < markernumber; i++) {
 		marker[i]=Dialog.getCheckbox();
 		intranuclear_0[i]=Dialog.getCheckbox();
 		if (marker[i]==true) {
-			markenumer_real++;
+			markernumber_total++;
 		}
 	}
-	intranuclear=newArray(markenumer_real);
+	intranuclear=newArray(markernumber_total);
 	j=0;
 	for (i = 0; i < markernumber; i++) {
 		if (marker[i]==true) {
