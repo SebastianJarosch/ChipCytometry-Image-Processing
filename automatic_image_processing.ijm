@@ -22,29 +22,34 @@ for (i = 0; i < markernumber; i++) {
 	}
 }
 
-
+//Start the analysis
 if(status!="analyzed"){
 	print("Number of markers found: "+markernumber);
 	
 	//get type of tissue to adjust default parameters for analysis
-	Dialog.create("Select tissue type");
+	Dialog.create("Tissue properties");
 	Dialog.addString('ChipID', ChipID)
 	organisms=newArray("human","mouse");
 	tissues=newArray("colon","spleen/LN","stomach","pancreas","breast");
 	Dialog.addChoice("Organism", organisms, "human");
 	Dialog.addChoice("Tissue", tissues, "colon");
-	Dialog.show();
-	ChipID=Dialog.getString();
-	organism=Dialog.getChoice();
-	tissue=Dialog.getChoice();
-	print("Chip "+ChipID+" contains "+organism+" "+tissue+" tissue");
-
-	//get size of the fused image and number of images
-	//Set if segmentation and FL-value calculation should be performed
-	Dialog.create("Automatic image processing");
+	Dialog.addMessage("<html><b>Size of the tissue section</b></html>")
 	Dialog.addNumber("grid size x", 6);
 	Dialog.addNumber("grid size y", 4);
 	Dialog.addNumber("first tile", 1);
+	Dialog.show();
+
+	//Get values from the dialog
+	ChipID=Dialog.getString();
+	organism=Dialog.getChoice();
+	tissue=Dialog.getChoice();
+	xsize=Dialog.getNumber();
+	ysize=Dialog.getNumber();
+	firsttile=Dialog.getNumber();
+	print("Chip "+ChipID+" contains "+organism+" "+tissue+" tissue");
+
+	//Dialog for selection of markers to be analyzed
+	Dialog.create("Select markers for analysis");
 	n=2*markernumber;
 	chbxlables = newArray(n);
 	defaults = newArray(n);
@@ -52,35 +57,16 @@ if(status!="analyzed"){
 		chbxlables[i]="Process "+folders[i/2];
 		chbxlables[i+1]="Intranuclear Marker";
 		defaults[i] = true;
-		defaults[i+1] = false;
+		if(folders[i/2]=='DNA'||folders[i/2]=='Nuclei'||folders[i/2]=='FoxP3'||folders[i/2]=='GATA3'||folders[i/2]=='Ki67'){
+			defaults[i+1] = true;
+		}else {
+			defaults[i+1] = false;
+		}
 	}
 	Dialog.addCheckboxGroup(markernumber, 2, chbxlables, defaults);
-	Dialog.addCheckbox("Segmentation ", true);
-	Dialog.addChoice("Nuclei staining", folders, "Nuclei");
-	sepepithel=false;
-	
-	if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
-		Dialog.addChoice("Epithelial cell staining", folders, "Cytokeratin");
-		sepepithel=true;
-	}
-	ensize=3;
-	if (tissue=="spleen/LN") {
-		ensize=2;
-	}
-	Dialog.addNumber("Enlarge ROIs by", ensize,0,1, "pixel");
-	Dialog.addCheckbox("FL-Value calculation ", true);
-	Dialog.addCheckbox("Correction for surface markers? ", true);
-	Dialog.addCheckbox("Check for consistancy over markers? ", true);
-	Dialog.addMessage('--------------------------------------')
-	Dialog.addCheckbox("Correct for spatial spillover? ", true);
-	Dialog.addNumber("Threshold", 60);
-	Dialog.addNumber("Min intensity", 100);
 	Dialog.show();
-	
+
 	//Get values from the dialog
-	xsize=Dialog.getNumber();
-	ysize=Dialog.getNumber();
-	firsttile=Dialog.getNumber();
 	marker=newArray(markernumber);
 	intranuclear_0=newArray(markernumber);
 	markenumer_real=0;
@@ -99,14 +85,57 @@ if(status!="analyzed"){
 			j++;
 		}
 	}
+
+	//Create dialog with options for analysis
+	Dialog.create("Specify analysis");
+	Dialog.addCheckbox("<html><b>Segmentation </b></html>", true);
+	nuclei_names=newArray("Nuclei","DNA","Hoechst");
+	Dialog.addChoice("Nuclei staining", folders, occurance_in_array(folders, nuclei_names));
+	sepepithel=false;
+	
+	if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
+		choices=Array.concat(folders,"No staining");
+		epithelial_names=newArray("PAN","Cytokeratin","PAN-Cytokeratin","EpCAM");
+		Dialog.addChoice("Epithelial cells", choices, occurance_in_array(folders, epithelial_names));
+		sepepithel=true;
+	}
+	ensize=3;
+	if (tissue=="spleen/LN") {
+		ensize=2;
+	}
+	Dialog.addNumber("Enlarge ROIs by", ensize,0,1, "pixel");
+	Dialog.addMessage("");
+	Dialog.addCheckbox("<html><b>FL-Value calculation </b></html>", true);
+	Dialog.addMessage("<html><b>Correction for surface markers </b></html>");
+	Dialog.addCheckbox("<html><u>Remove outliers</u></html>", true);
+	Dialog.addNumber("<html><i>Radius </i></html>", 2);
+	Dialog.addNumber("<html><i>Threshold </i></html>", 50);
+	Dialog.addCheckbox("<html><u>Minimum filter</u></html>", true);
+	Dialog.addNumber("<html><i>Radius </i></html>", 0.5);
+	Dialog.addMessage("");
+	Dialog.addCheckbox("<html><b>Check for consistancy over markers </b></html>", true);
+	Dialog.addMessage("");
+	Dialog.addCheckbox("<html><b>Correct for spatial spillover </b></html>", true);
+	Dialog.addNumber("Threshold", 60, 0, 6, "percent of signal");
+	Dialog.addNumber("Min intensity", 100);
+	Dialog.show();
+	
+	//Get values from the dialog
 	segmentationstatus=Dialog.getCheckbox();
 	segmentationmarker=Dialog.getChoice();
 	if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
 		cytokeratin=Dialog.getChoice();
 	}
+	if (cytokeratin=="No staining") {
+		sepepithel=false;
+	}
 	ensize=Dialog.getNumber();
 	valuecalculation=Dialog.getCheckbox();
-	surfacecorrection=Dialog.getCheckbox();
+	outlier_correction=Dialog.getCheckbox();
+	outlier_radius=Dialog.getNumber();
+	outlier_threshold=Dialog.getNumber();
+	minimum_correction=Dialog.getCheckbox();
+	minimum_radius=Dialog.getNumber();
 	checkconsistancy=Dialog.getCheckbox();
 	spillovercorrection=Dialog.getCheckbox();
 	totalpositions=xsize*ysize+(firsttile-1);
@@ -131,7 +160,7 @@ if(status!="analyzed"){
 			}
 			if (next.length > segmentationmarkerpositions.length){
 				n = next.length - segmentationmarkerpositions.length;
-				errors = ArrayDiff(segmentationmarkerpositions, next);
+				errors = ArrayDifference(segmentationmarkerpositions, next);
 				Array.sort(errors);
 				print(n+" additional positions detected in "+folders[i]+":");
 				Array.print(errors);
@@ -139,7 +168,7 @@ if(status!="analyzed"){
 			}
 			if (next.length < segmentationmarkerpositions.length){
 				n = segmentationmarkerpositions.length-next.length;
-				errors = ArrayDiff(segmentationmarkerpositions, next);
+				errors = ArrayDifference(segmentationmarkerpositions, next);
 				Array.sort(errors);
 				print(n+" positions are missing in "+folders[i]+":");
 				Array.print(errors);
@@ -171,7 +200,7 @@ if(status!="analyzed"){
 						next[k]=substring(next[k], 0, lengthOf(next[k])-1);
 					}
 					if (next.length > segmentationmarkerpositions.length){
-						errors = ArrayDiff(segmentationmarkerpositions, next);
+						errors = ArrayDifference(segmentationmarkerpositions, next);
 						for (l = 0; l < errors.length; l++) {
 							File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr/HDRFL.tiff");
 							File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr");
@@ -179,7 +208,7 @@ if(status!="analyzed"){
 						}
 					}
 					if (next.length < segmentationmarkerpositions.length){
-						errors = ArrayDiff(segmentationmarkerpositions, next);
+						errors = ArrayDifference(segmentationmarkerpositions, next);
 						for (l = 0; l < errors.length; l++) {
 							for (m = 0; m < marker.length; m++) {
 									File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr/HDRFL.tiff");
@@ -272,7 +301,7 @@ if(status!="analyzed"){
 			saveAs("Tiff", pathraw+i);
 			close();
 		}
-		print("\\Update: Image generated successfully: "+i);
+		print("\\Update: Framework image generated successfully: "+i);
 	}
 	print ("processing time empty positions ="+(getTime-startT)/1000+"s");
 	Tempty = Tempty+((getTime-startT)/1000);
@@ -416,10 +445,10 @@ if(status!="analyzed"){
 			
 		}else {
 		// Generate Mask/ROI
-		run("Duplicate...", "title=MASK.tiff");
-		saveAs("tiff", finalimages+"segmentation/MASK.tiff");
+		run("Duplicate...", "title=all.tiff");
+		saveAs("tiff", finalimages+"segmentation/all.tiff");
 		run("Close All");
-		cellnumber=segmentation("MASK",3000,70,400,0.55);
+		cellnumber=segmentation("all",3000,70,400,0.55);
 		epithelialcellnumber=0;
 		LPcellnumber=0;
 		}
@@ -433,7 +462,7 @@ if(status!="analyzed"){
 				roiManager("open", finalimages+"segmentation/Epithel_enlarged_cells.zip")
 			}
 			if (sepepithel == false){
-				roiManager("open", finalimages+"segmentation/MASK_enlarged_cells.zip")
+				roiManager("open", finalimages+"segmentation/all_enlarged_cells.zip")
 			}
 			
 			//Open Multi Stack and get dimensions for measurements
@@ -449,10 +478,14 @@ if(status!="analyzed"){
 			for (i=1;i<=slices;i++) {
 				
 				//Correct the surfacemarkers to get them less blurry
-				if (intranuclear[i-1]!=true && surfacecorrection == true){
-					run("Remove Outliers...", "radius=2 threshold=50 which=Bright");
+				if (intranuclear[i-1]!=true){
+					if(outlier_correction==true){
+						run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
+					}
 					run("Median...", "radius=1");
-					run("Minimum...", "radius=0.5");
+					if(minimum_correction==true){
+						run("Minimum...", "radius=0.5");
+					}
 				}
 
 				//Perform spillovercorrection for all cells 
@@ -636,40 +669,50 @@ if(status!="analyzed"){
 
 
 //FUNCTIONS......................................................................................
-function ArrayDiff(array1, array2) {
-	diffA	= newArray();
-	unionA 	= newArray();	
+function ArrayDifference(array1, array2) {
+	diff_Array = newArray();
+	union_Array = newArray();	
 	for (i=0; i<array1.length; i++) {
 		for (j=0; j<array2.length; j++) {
 			if (array1[i] == array2[j]){
-				unionA = Array.concat(unionA, array1[i]);
+				union_Array = Array.concat(union_Array, array1[i]);
 			}
 		}
 	}
-	c = 0;
+	x = 0;
 	for (i=0; i<array1.length; i++) {
-		for (j=0; j<unionA.length; j++) {
-			if (array1[i] == unionA[j]){
-				c++;
+		for (j=0; j<union_Array.length; j++) {
+			if (array1[i] == union_Array[j]){
+				x++;
 			}
 		}
-		if (c == 0) {
-			diffA = Array.concat(diffA, array1[i]);
+		if (x == 0) {
+			diff_Array = Array.concat(diff_Array, array1[i]);
 		}
-		c = 0;
+		x = 0;
 	}
 	for (i=0; i<array2.length; i++) {
-		for (j=0; j<unionA.length; j++) {
-			if (array2[i] == unionA[j]){
-				c++;
+		for (j=0; j<union_Array.length; j++) {
+			if (array2[i] == union_Array[j]){
+				x++;
 			}
 		}
-		if (c == 0) {
-			diffA = Array.concat(diffA, array2[i]);
+		if (x == 0) {
+			diff_Array = Array.concat(diff_Array, array2[i]);
 		}
-		c = 0;
+		x = 0;
 	}	
-	return diffA;
+	return diff_Array;
+}
+
+function occurance_in_array(array, search){
+	for (i = 0; i < array.length; i++) {
+		for (j = 0; j < search.length; j++) {
+			if(array[i]==search[j]){
+				return search[j];
+			}
+		}
+	}
 }
 
 function segmentation(filename, lower_threshold, minsize, maxsize, circularitymin) {
@@ -691,7 +734,7 @@ function segmentation(filename, lower_threshold, minsize, maxsize, circularitymi
 	run("Close All");
 	setBatchMode(true);
 	
-	// Generate Mask/ROI
+	// Generate Mask/ROIs
 	setBatchMode(true);
 	open(finalimages+"segmentation/"+filename+".tiff");
 	selectWindow(filename+".tiff");
@@ -735,9 +778,7 @@ function segmentation(filename, lower_threshold, minsize, maxsize, circularitymi
 		saveAs("tiff", finalimages+"segmentation/"+filename+"_mask.tiff");
 		close();	
 	}else {
-		Dialog.create("No cells detected");
-		Dialog.addMessage("No cells detected for "+filename+"\n"+"check your segmentation channel!")
-		Dialog.show();
+		exit("No cells detected for "+filename+"\n"+"check your segmentation channel!");
 	}
 	return counts;
 }
