@@ -380,7 +380,8 @@ if(status!="analyzed"){
 	File.makeDirectory(finalimages+"stitching");
 	
 	if (segmentationstatus == true) {
-		
+
+		var threshold_values=newArray();
 		startT=getTime();
 		open(finalimages+segmentationmarker+".tiff");
 	
@@ -484,7 +485,7 @@ if(status!="analyzed"){
 					}
 					run("Median...", "radius=1");
 					if(minimum_correction==true){
-						run("Minimum...", "radius=0.5");
+						run("Minimum...", "radius="+minimum_radius);
 					}
 				}
 
@@ -645,16 +646,23 @@ if(status!="analyzed"){
 		print("Segmentationmarker: "+segmentationmarker);
 		if (sepepithel == true) {print("epithelial cell marker: "+cytokeratin);}
 		print("Enlargement of ROIs: "+ensize+" pixel");
-		if (sepepithel == true) {print("Number of epithelial cells: "+epithelialcellnumber);}
-		if (sepepithel == true) {print("Number of lamina propria cells: "+LPcellnumber);}
+		if (sepepithel == true) {print("Number of epithelial cells: "+epithelialcellnumber+" Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
+		if (sepepithel == true) {print("Number of lamina propria cells: "+LPcellnumber+" Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
 		totalcellnumber=epithelialcellnumber+LPcellnumber+cellnumber;
 		print("Total cells segmented: "+totalcellnumber);
+		if (sepepithel == false) {print("Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
 		print("Time for cell recognition: "+Tsegmentation+" s");
 	}
 	if (valuecalculation == 1) {
 		print("************************************************************************************");
 		print("----------------------------FL-calculation--------------------------------------");
 		print("Time for FL-value calculation: "+Tcalculation+" s");
+		if(outlier_correction==true){
+			print("Outlier correction was performed with radius = "+outlier_radius+" and threshold = "+outlier_threshold);
+		}
+		if(minimum_correction==true){
+			print("Minimum filter was applied with radius = "+minimum_radius);
+		}
 		if (spillovercorrection == 1) {
 			print("spatial spillover corrected for cells with more than "+(threshhold*25)+" % signal per quadrant");
 			print("corrected were cells with a grayscale value higher than "+minCorrInt);
@@ -741,6 +749,8 @@ function segmentation(filename, lower_threshold, minsize, maxsize, circularitymi
 	run("Gaussian Blur...", "sigma=1.00");
 	run("Threshold...");
     setThreshold(lower,upper);
+    threshold_values=Array.concat(threshold_values,lower);
+    threshold_values=Array.concat(threshold_values,upper);
 	setOption("BlackBackground", true);
 	run("Convert to Mask");
 	run("Close");
