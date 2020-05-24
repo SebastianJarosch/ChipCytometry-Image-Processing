@@ -310,8 +310,9 @@ if(status!="analyzed"){
 	//get files from folder and rename according to their directory
 	for (j = 0; j < markernumber; j++) {
 		setBatchMode(true);
-		print(folders[j]);
 		if(marker[j] == 1){
+			print(folders[j]);
+			print("");
 			for (i = 1; i <= totalpositions; i++) {
 				if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
 					open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
