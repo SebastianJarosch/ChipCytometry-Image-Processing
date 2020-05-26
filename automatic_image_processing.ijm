@@ -468,7 +468,11 @@ if(status!="analyzed"){
 			}
 			
 			//Open Multi Stack and get dimensions for measurements
-			run("Image Sequence...", "open=finalimages");
+			files=getFileList(finalimages);
+			for(i=0; i<files.length; i++) {
+				open(finalimages+files[i]);
+			}
+			run("Images to Stack", "name=Stack title=[] use");
 			run("Clear Results");
 			run("Set Measurements...", "area mean standard min centroid center perimeter bounding fit shape feret's integrated median skewness kurtosis area_fraction stack display invert add redirect=None decimal=3");
 			setSlice(1);
