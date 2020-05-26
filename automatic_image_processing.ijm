@@ -139,9 +139,9 @@ if(status!="analyzed"){
 	checkconsistancy=Dialog.getCheckbox();
 	spillovercorrection=Dialog.getCheckbox();
 	totalpositions=xsize*ysize+(firsttile-1);
-	threshhold=Dialog.getNumber();
+	distribution_threshold=Dialog.getNumber();
 	minCorrInt=Dialog.getNumber();
-	threshhold=threshhold/25;
+	distribution_threshold=distribution_threshold/25;
 	error_cells=newArray();
 	
 	//Check for conistancy of positions between markers, using the segmentation marker as refference
@@ -559,10 +559,10 @@ if(status!="analyzed"){
 									}
 									Array.getStatistics(percentages, min, max, mean, stdDev);
 	
-									//if the percentage of signal coming from one sub-ROI gets higher than the threshhold,
+									//if the percentage of signal coming from one sub-ROI gets higher than the threshold,
 									//The original ROI is saved (as Image and ROI) and the signal is deleted for this marker
 									for (l = 0; l < 4; l++) {
-										if(parseFloat(percentages[l])>threshhold){
+										if(parseFloat(percentages[l])>distribution_threshold){
 											roiManager("select",cell);
 											run("Copy");
 											run("Internal Clipboard");
@@ -670,7 +670,7 @@ if(status!="analyzed"){
 			print("Minimum filter was applied with radius = "+minimum_radius);
 		}
 		if (spillovercorrection == 1) {
-			print("spatial spillover corrected for cells with more than "+(threshhold*25)+" % signal per quadrant");
+			print("spatial spillover corrected for cells with more than "+(distribution_threshold*25)+" % signal per quadrant");
 			print("corrected were cells with a grayscale value higher than "+minCorrInt);
 			if(error_cells.length > 0){
 				print(error_cells.length+" cells yielded an error due to their shape");
