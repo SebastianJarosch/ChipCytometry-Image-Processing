@@ -469,6 +469,9 @@ if(status!="analyzed"){
 			
 			//Open Multi Stack and get dimensions for measurements
 			files=getFileList(finalimages);
+			files=Array.delete(files, "stitching/");
+			files=Array.delete(files, "segmentation/");
+			
 			for(i=0; i<files.length; i++) {
 				open(finalimages+files[i]);
 			}
