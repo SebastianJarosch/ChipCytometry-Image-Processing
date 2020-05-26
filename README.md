@@ -23,6 +23,7 @@ a) Adjust Background and contrast value in Zellkraftwerk app in order to get the
 b) Export images for each channel in the Zellkraftwerk app as 16 bit grayscale tiff images <br>
 c) Copy the Scanjob folders for each channel in a new directory named with the chipID <br>
 d) Rename the scanjob folders with their channel names <br>
+e) To save space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br>
 
 ### 2. Data generation in ImageJ
 *Dependent on the size of a chip and the number of segmented cells, the spillover-correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the correctness of the input parameters first* <br><br>
