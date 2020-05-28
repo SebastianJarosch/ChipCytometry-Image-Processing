@@ -49,7 +49,7 @@ print("Chip "+ChipID+" contains "+organism+" "+tissue+" tissue");
 if (clean==true) {
 	var total_filelist=newArray();
 	pattern_ending = ".tiff";
-	deleteFiles(pathraw, pattern_ending); 
+	deleteFiles(pathraw, pattern_ending, true); 
 }
 
 //Dialog for selection of markers to be analyzed
@@ -186,9 +186,7 @@ for (i = 0; i < markernumber; i++) {
 
 //delete folders not present in all markers
 if (checkconsistancy == true && fail == true) {
-	choices = newArray(2);
-	choices[0]="delete additional positions";
-	choices[1]="exit";
+	choices = newArray("delete additional positions","exit");
 	Dialog.create("Inconsistancy detected");
 	Dialog.addChoice("How would you like to proceed?", choices);
 	Dialog.show();
@@ -819,11 +817,14 @@ function listFiles(dir) {
 	}
 }
 
-function deleteFiles(dir, ending){
+function deleteFiles(dir, ending, parent){
 	listFiles(dir);
 	for (i = 0; i < total_filelist.length; i++) {
 		if (!endsWith(total_filelist[i],".tiff")) {
-			File.delete(total_filelist[i])
+			File.delete(total_filelist[i]);
+			if (parent==true) {
+				File.delete(File.getParent(total_filelist[i]));
+			}
 		}
 	}
 }
