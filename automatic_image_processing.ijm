@@ -730,13 +730,15 @@ function ArrayDifference(array1, array2) {
 }
 
 function occurance_in_array(array, search){
+	occurance = array[0];
 	for (i = 0; i < array.length; i++) {
 		for (j = 0; j < search.length; j++) {
 			if(array[i]==search[j]){
-				return search[j];
+				occurance = search[j];
 			}
 		}
 	}
+	return occurance;
 }
 
 function segmentation(filename, lower_threshold, minsize, maxsize, circularitymin) {
