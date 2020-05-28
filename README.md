@@ -4,7 +4,7 @@ Macros and codes from the publication "Publication Jarosch et al..."
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.tiff)
 
 ## System reqirements
-* ImageJ 1.52e or higher <br>
+* ImageJ 1.53a or higher <br>
 * Matlab 2018b or higher <br>
 * Python3.7+ for clustering and neighborhood analysis
 
