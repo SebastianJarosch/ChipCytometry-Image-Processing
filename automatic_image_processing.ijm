@@ -33,7 +33,7 @@ Dialog.addMessage("<html><b>Size of the tissue section</b></html>")
 Dialog.addNumber("grid size x", 6);
 Dialog.addNumber("grid size y", 4);
 Dialog.addNumber("first tile", 1);
-Dialog.addCheckbox("Clean folder", true)
+Dialog.addCheckbox("Clean folder", false)
 Dialog.show();
 
 //Get values from the dialog

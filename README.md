@@ -21,9 +21,9 @@ Macros and codes from the publication "Publication Jarosch et al..."
 ### 1. Image export
 a) Adjust Background and contrast value in Zellkraftwerk app in order to get the best snapshot from the HDR image <br>
 b) Export images for each channel in the Zellkraftwerk app as 16 bit grayscale tiff images.<br>
-c) Copy the Scanjob folders for each channel in a new directory named with the chipID. <b> The script should not be run on the original imaging files! </b> <br>
+c) Copy the Scanjob folders for each channel in a new directory named with the chipID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files! </b> <br>
 d) Rename the scanjob folders with their channel names <br>
-e) To save space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br>
+e) To save space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br> This cleanup procedure is now also automated in the script.
 
 ### 2. Data generation in ImageJ
 *Dependent on the size of a chip and the number of segmented cells, the spillover-correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the correctness of the input parameters first* <br><br>
