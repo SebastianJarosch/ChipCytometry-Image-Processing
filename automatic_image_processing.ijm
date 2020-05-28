@@ -27,12 +27,15 @@ Dialog.create("Tissue properties");
 Dialog.addString('ChipID', ChipID)
 organisms=newArray("human","mouse");
 tissues=newArray("colon","spleen/LN","stomach","pancreas","breast");
+Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Organism", organisms, "human");
 Dialog.addChoice("Tissue", tissues, "colon");
-Dialog.addMessage("<html><b>Size of the tissue section</b></html>")
+Dialog.setInsets(10, 0, 0);
+Dialog.addMessage(highlight_string("Size of the tissue section","b"));
 Dialog.addNumber("grid size x", 6);
 Dialog.addNumber("grid size y", 4);
 Dialog.addNumber("first tile", 1);
+Dialog.setInsets(10, 0, 0);
 Dialog.addCheckbox("Clean folder", false)
 Dialog.show();
 
@@ -92,14 +95,17 @@ for (i = 0; i < markernumber; i++) {
 
 //Create dialog with options for analysis
 Dialog.create("Specify analysis");
-Dialog.addCheckbox("<html><b>Segmentation </b></html>", true);
+Dialog.setInsets(0, 0, 0);
+Dialog.addCheckbox(highlight_string("Segmentation","b"), true);
 nuclei_names=newArray("Nuclei","DNA","Hoechst");
+Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Nuclei staining", folders, occurance_in_array(folders, nuclei_names));
 sepepithel=false;
 
 if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
 	choices=Array.concat(folders,"No staining");
 	epithelial_names=newArray("PAN","Cytokeratin","PAN-Cytokeratin","EpCAM");
+	Dialog.setInsets(0, 0, 0);
 	Dialog.addChoice("Epithelial cells", choices, occurance_in_array(folders, epithelial_names));
 	sepepithel=true;
 }
@@ -109,17 +115,17 @@ if (tissue=="spleen/LN") {
 }
 Dialog.addNumber("Enlarge ROIs by", ensize,0,1, "pixel");
 Dialog.addMessage("");
-Dialog.addCheckbox("<html><b>FL-Value calculation </b></html>", true);
-Dialog.addMessage("<html><b>Correction for surface markers </b></html>");
-Dialog.addCheckbox("<html><u>Remove outliers</u></html>", true);
-Dialog.addNumber("<html><i>Radius </i></html>", 2);
-Dialog.addNumber("<html><i>Threshold </i></html>", 50);
-Dialog.addCheckbox("<html><u>Minimum filter</u></html>", true);
-Dialog.addNumber("<html><i>Radius </i></html>", 0.5);
-Dialog.addMessage("");
-Dialog.addCheckbox("<html><b>Check for consistancy over markers </b></html>", true);
-Dialog.addMessage("");
-Dialog.addCheckbox("<html><b>Correct for spatial spillover </b></html>", true);
+Dialog.setInsets(10, 0, 0);
+Dialog.addCheckbox(highlight_string("FL-Value calculation","b"), true);
+Dialog.addCheckbox(highlight_string("Remove outliers","u"), true);
+Dialog.addNumber(highlight_string("Radius","i"), 2);
+Dialog.addNumber(highlight_string("Threshold","i"), 50);
+Dialog.addCheckbox(highlight_string("Minimum filter","u"), true);
+Dialog.addNumber(highlight_string("Radius","i"), 0.5);
+Dialog.setInsets(10, 0, 0);
+Dialog.addCheckbox(highlight_string("Check for consistancy over markers","b"), true);
+Dialog.setInsets(10, 0, 0);
+Dialog.addCheckbox(highlight_string("Correct for spatial spillover","b"), true);
 Dialog.addNumber("Threshold", 60, 0, 6, "percent of signal");
 Dialog.addNumber("Min intensity", 100);
 Dialog.show();
@@ -826,4 +832,14 @@ function deleteFiles(dir, ending, parent){
 			}
 		}
 	}
+}
+
+function highlight_string(string, how){
+	if (getInfo("os.name")=="Mac OS X"){
+		String.resetBuffer;
+		String.append("<html><"+how+">");
+		String.append(string);
+		String.append("</"+how+"></html>");
+	}
+	return String.buffer;
 }
