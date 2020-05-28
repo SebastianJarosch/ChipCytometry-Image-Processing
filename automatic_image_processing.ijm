@@ -33,6 +33,7 @@ Dialog.addMessage("<html><b>Size of the tissue section</b></html>")
 Dialog.addNumber("grid size x", 6);
 Dialog.addNumber("grid size y", 4);
 Dialog.addNumber("first tile", 1);
+Dialog.addCheckbox("Clean folder", true)
 Dialog.show();
 
 //Get values from the dialog
@@ -42,7 +43,14 @@ tissue=Dialog.getChoice();
 xsize=Dialog.getNumber();
 ysize=Dialog.getNumber();
 firsttile=Dialog.getNumber();
+clean=Dialog.getCheckbox();
 print("Chip "+ChipID+" contains "+organism+" "+tissue+" tissue");
+
+if (clean==true) {
+	var total_filelist=newArray();
+	pattern_ending = ".tiff";
+	deleteFiles(pathraw, pattern_ending); 
+}
 
 //Dialog for selection of markers to be analyzed
 Dialog.create("Select markers for analysis");
@@ -796,4 +804,26 @@ function segmentation(filename, lower_threshold, minsize, maxsize, circularitymi
 		exit("No cells detected for "+filename+"\n"+"check your segmentation channel!");
 	}
 	return counts;
+}
+
+function listFiles(dir) {
+	list = getFileList(dir);
+	allfiles = newArray();
+	for (i=0; i<list.length; i++) {
+		if (endsWith(list[i], "/")){
+			listFiles(""+dir+list[i]);
+		}else{
+			path=dir+list[i];
+			total_filelist=Array.concat(total_filelist, path);
+		}
+	}
+}
+
+function deleteFiles(dir, ending){
+	listFiles(dir);
+	for (i = 0; i < total_filelist.length; i++) {
+		if (!endsWith(total_filelist[i],".tiff")) {
+			File.delete(total_filelist[i])
+		}
+	}
 }
