@@ -155,7 +155,7 @@ for (j = 0; j < segmentationmarkerpositions.length; j++) {
 }
 
 positions = newArray();
-fail = false;
+inconsistant = false;
 for (i = 0; i < markernumber; i++) {
 	if(marker[i] == true){
 		next = getFileList(pathraw+folders[i]);
@@ -168,7 +168,7 @@ for (i = 0; i < markernumber; i++) {
 			Array.sort(errors);
 			print(n+" additional positions detected in "+folders[i]+":");
 			Array.print(errors);
-			fail = true;
+			inconsistant = true;
 		}
 		if (next.length < segmentationmarkerpositions.length){
 			n = segmentationmarkerpositions.length-next.length;
@@ -176,7 +176,7 @@ for (i = 0; i < markernumber; i++) {
 			Array.sort(errors);
 			print(n+" positions are missing in "+folders[i]+":");
 			Array.print(errors);
-			fail = true;
+			inconsistant = true;
 		}
 		if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
 			print("Check OK for "+folders[i]);
@@ -185,7 +185,7 @@ for (i = 0; i < markernumber; i++) {
 }
 
 //delete folders not present in all markers
-if (checkconsistancy == true && fail == true) {
+if (checkconsistancy == true && inconsistant == true) {
 	choices = newArray("delete additional positions","exit");
 	Dialog.create("Inconsistancy detected");
 	Dialog.addChoice("How would you like to proceed?", choices);
@@ -213,9 +213,9 @@ if (checkconsistancy == true && fail == true) {
 					errors = ArrayDifference(segmentationmarkerpositions, next);
 					for (l = 0; l < errors.length; l++) {
 						for (m = 0; m < marker.length; m++) {
-								File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr/HDRFL.tiff");
-								File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr");
-								File.delete(pathraw+folders[m]+"/"+errors[l]);
+							File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr/HDRFL.tiff");
+							File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr");
+							File.delete(pathraw+folders[m]+"/"+errors[l]);
 						}
 					}
 				}
@@ -239,7 +239,7 @@ if (checkconsistancy == true && fail == true) {
 			}
 			if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
 				print("Check OK for "+folders[i]);
-				fail=false;
+				inconsistant=false;
 			}
 			if (next.length != segmentationmarkerpositions.length) {
 				print("Check failed for "+folders[i]);
@@ -282,7 +282,6 @@ startTtotal = getTime();
 startT = getTime;
 
 //generate black images for stitching which cover the whole area
-//batchmode hides images and makes the whole process much faster
 setBatchMode(true);
 for (i = 1; i <= totalpositions; i++) {
 	if (i<10) {
@@ -303,7 +302,7 @@ for (i = 1; i <= totalpositions; i++) {
 		saveAs("Tiff", pathraw+i);
 		close();
 	}
-	print("\\Update: Framework image generated successfully: "+i);
+	print("\\Update: Framework images generated successfully: "+i);
 }
 print ("processing time empty positions ="+(getTime-startT)/1000+"s");
 Tempty = Tempty+((getTime-startT)/1000);
@@ -631,7 +630,7 @@ print("Summary of automatic image processing");
 print("************************************************************************************");
 print("-----------------------general project information---------------------------");
 print("Tissue type on Chip "+ChipID+": "+organism+" "+tissue);
-if (fail == true){
+if (inconsistant == true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
 print("Size of the stiched image: "+xsize+" x "+ysize);
