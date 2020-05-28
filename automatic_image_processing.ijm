@@ -840,6 +840,9 @@ function highlight_string(string, how){
 		String.append("<html><"+how+">");
 		String.append(string);
 		String.append("</"+how+"></html>");
+	}else {
+		String.resetBuffer;
+		String.append(string);
 	}
 	return String.buffer;
 }
