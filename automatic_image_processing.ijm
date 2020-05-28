@@ -610,7 +610,7 @@ if (segmentationstatus == true) {
 	}
 }
 
-//cleanup of files in their folders
+//cleanup of files and move to subfolders
 run("Close All");
 for (i = 0; i < markernumber; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
@@ -619,7 +619,7 @@ File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileCon
 File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv");
 
 
-//Save error generating cells
+//Save error generating cells if the appear
 if(spillovercorrection==true && error_cells.length>0){
 	print("\\Clear");
 	for (i = 0; i < error_cells.length; i++) {
