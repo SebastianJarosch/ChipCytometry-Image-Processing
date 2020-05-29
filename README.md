@@ -38,7 +38,6 @@ c) The .fcs file will be written in your MATLAB working directory and can be ana
 
 ## Clustering of cells and neighborhood analysis using scanpy
 Scanpy was developed by the Theis Lab for analyzing scRNA sequencing data and is one of the leading packages in this field. Here we feed in a [cells x proteins] matrix instead of the [cells x genes] matrix to use the pipeline for our imaging data. Cells and their fluorescence values can be imported into scanpy as adata object via the FL_values.csv and channels.csv files. An example of how to process data can be found in clustering_chipcytometry_cells.ipynb. For further information on the API of the scanpy package, check the scanpy documentation (https://scanpy.readthedocs.io/en/stable/). <br><br>
-Besides this aproach we would also like to mention the cyt3 package as matlab GUI (https://github.com/dpeerlab/cyt3) from the Dana Pe'er Lab which was developed for the analysis of MassCytometry data and allows clustering of cells from the csv generated in matlab before
 
 ## Sample data
 The folder sample data contains Chipcytometry data from an inflamed human colon biopsy shown in Figure 2 of the paper.
