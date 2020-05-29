@@ -31,12 +31,18 @@ Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Organism", organisms, "human");
 Dialog.addChoice("Tissue", tissues, "colon");
 Dialog.setInsets(10, 0, 0);
-Dialog.addMessage(highlight_string("Size of the tissue section","b"));
+highlight_message("Size of the tissue section", "b");
 Dialog.addNumber("grid size x", 6);
 Dialog.addNumber("grid size y", 4);
 Dialog.addNumber("first tile", 1);
 Dialog.setInsets(10, 0, 0);
 Dialog.addCheckbox("Clean folder", false)
+Dialog.setInsets(0, 0, 0);
+highlight_message("This will delete all files except","i");
+Dialog.setInsets(0, 0, 0);
+highlight_message("of the .tiff files needed for the","i");
+Dialog.setInsets(0, 0, 0);
+highlight_message("analysis to save disk space.","i");
 Dialog.show();
 
 //Get values from the dialog
@@ -114,20 +120,26 @@ if (tissue=="spleen/LN") {
 	ensize=2;
 }
 Dialog.addNumber("Enlarge ROIs by", ensize,0,1, "pixel");
-Dialog.addMessage("");
-Dialog.setInsets(10, 0, 0);
+Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("FL-Value calculation","b"), true);
 Dialog.addCheckbox(highlight_string("Remove outliers","u"), true);
 Dialog.addNumber(highlight_string("Radius ","i"), 2);
 Dialog.addNumber(highlight_string("Threshold ","i"), 50);
 Dialog.addCheckbox(highlight_string("Minimum filter","u"), true);
 Dialog.addNumber(highlight_string("Radius ","i"), 0.5);
-Dialog.setInsets(10, 0, 0);
-Dialog.addCheckbox(highlight_string("Check for consistancy over markers","b"), true);
-Dialog.setInsets(10, 0, 0);
-Dialog.addCheckbox(highlight_string("Correct for spatial spillover","b"), true);
-Dialog.addNumber("Threshold", 60, 0, 6, "percent of signal");
-Dialog.addNumber("Min intensity", 100);
+Dialog.setInsets(15, 0, 0);
+Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
+Dialog.setInsets(15, 0, 0);
+Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
+Dialog.addNumber("Threshold", 60, 0, 4, "%");
+Dialog.addNumber("Min intensity", 100, 0, 4, "");
+Dialog.addHelp("<html><b>Segmentation</b><br>here you need to choose your segmentationmarker and the marker for epithelial cells, if you have selected a tissue type "+
+"containing epithelial cells. if no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
+"<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
+"resemble a good starting point.<br><br><b>Marker consistancy check</b>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
+"choose to delete images, which are only present for some markers but not for others.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
+"signal is maximal allowed to be present in only one quater of the cell. The min intensity is the min grayscale value, for which a cell is considered for spacial spillover "+
+"correction<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
 //Get values from the dialog
@@ -357,7 +369,10 @@ for (j = 0; j < markernumber; j++) {
 		startT = getTime;
 		
 		//Run stitching Plugin from ImageJ with files generated in the folder
-		run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save memory (but be slower)] image_output=[Fuse and display]");
+		run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
+		"first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] "+
+		"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save memory (but be slower)] "+
+		"image_output=[Fuse and display]");
 		File.makeDirectory(pathraw+"Results");
 		saveAs("tiff", pathraw+"Results/"+folders[j]+".tiff");
 		close();
@@ -485,7 +500,8 @@ if (segmentationstatus == true) {
 		}
 		run("Images to Stack", "name=Stack title=[] use");
 		run("Clear Results");
-		run("Set Measurements...", "area mean standard min centroid center perimeter bounding fit shape feret's integrated median skewness kurtosis area_fraction stack display invert add redirect=None decimal=3");
+		run("Set Measurements...", "area mean standard min centroid center perimeter bounding fit shape feret's integrated median "+
+		"skewness kurtosis area_fraction stack display invert add redirect=None decimal=3");
 		setSlice(1);
 		Stack.getDimensions(width, height, channels, slices, frames);
 		print("Number of images opened for measurement: "+slices);
@@ -847,4 +863,19 @@ function highlight_string(string, how){
 		String.append(string);
 	}
 	return String.buffer;
+}
+
+function highlight_message(string,how){
+	if (getInfo("os.name")=="Mac OS X"){
+		String.resetBuffer;
+		String.append("<html><"+how+">");
+		String.append(string);
+		String.append("</"+how+"></html>");
+		Dialog.addMessage(String.buffer);
+	}else {
+		size=10;
+		if (how=="b"){size=15}
+		if (how=="i"){size=8}
+		Dialog.addMessage(string, size, "black");
+	}
 }
