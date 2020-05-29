@@ -874,8 +874,8 @@ function highlight_message(string,how){
 		Dialog.addMessage(String.buffer);
 	}else {
 		size=10;
-		if (how=="b"){size=15}
-		if (how=="i"){size=8}
+		if (how=="b"){size=15;}
+		if (how=="i"){size=10;}
 		Dialog.addMessage(string, size, "black");
 	}
 }
