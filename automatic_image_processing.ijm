@@ -1,4 +1,4 @@
-//Run Script to enable y-Overlap in the stitching Plug-In
+//Run script to enable y-Overlap in the stitching Plug-In
 //If you are running the script for the first time, you will be asked to restart imageJ
 eval("bsh", "plugin.Stitching_Grid.seperateOverlapY = true;");
  
@@ -6,11 +6,11 @@ eval("bsh", "plugin.Stitching_Grid.seperateOverlapY = true;");
 pathraw=getDirectory("Choose the directory for raw data");
 ChipID=substring(pathraw, lengthOf(pathraw)-8, lengthOf(pathraw)-1);
 
-//get the Markers which are present in the subfolder of the path with rawdata
+//get the markers which are present in the subfolder of the path with rawdata
 folders=getFileList(pathraw);
 markernumber=folders.length;
 
-//Check if the Chip has already been analyzed by looking for the Results folder
+//Check if the chip has already been analyzed by searching for the "Results" folder
 for (i = 0; i < markernumber; i++) {
 	folders[i]=substring(folders[i], 0, lengthOf(folders[i])-1);
 	if (folders[i]=="Results") {
