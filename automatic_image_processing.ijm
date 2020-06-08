@@ -844,8 +844,10 @@ function deleteFiles(dir, ending, parent){
 	listFiles(dir);
 	for (i = 0; i < total_filelist.length; i++) {
 		if (!endsWith(total_filelist[i],".tiff")) {
+			print("\\Update:Deleting "+File.getParent(total_filelist[i]));
 			File.delete(total_filelist[i]);
 			if (parent==true) {
+				print("\\Update:Deleting "+File.getParent(total_filelist[i]));
 				File.delete(File.getParent(total_filelist[i]));
 			}
 		}
