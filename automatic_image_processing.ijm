@@ -102,6 +102,8 @@ for (i = 0; i < markernumber; i++) {
 //Create dialog with options for analysis
 Dialog.create("Specify analysis");
 Dialog.setInsets(0, 0, 0);
+Dialog.addCheckbox(highlight_string("Create merge image","b"), true);
+Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Segmentation","b"), true);
 nuclei_names=newArray("Nuclei","DNA","Hoechst");
 Dialog.setInsets(0, 0, 0);
@@ -143,6 +145,7 @@ Dialog.addHelp("<html><b>Segmentation</b><br>here you need to choose your segmen
 Dialog.show();
 
 //Get values from the dialog
+mergeimages=Dialog.getCheckbox();
 segmentationstatus=Dialog.getCheckbox();
 segmentationmarker=Dialog.getChoice();
 if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
@@ -396,6 +399,42 @@ for (i = 1; i <= totalpositions; i++) {
 	}
 }
 
+//Create merge image
+if (mergeimages == true){
+		colors=newArray("Red","Green","Blue","Gray","Cyan","Magenta","Yellow");
+	items=getFileList(pathraw+"Results/");
+	Array.print(items);
+	for (i = 0; i < items.length; i++) {
+		items[i]=substring(items[i], 0, lengthOf(items[i])-5);
+	}
+	items=Array.concat(items,"*None*");
+	Dialog.create("Define channels for merged image");
+	for (i = 0; i < 7; i++) {
+		label="C"+(i+1)+" "+colors[i];
+		Dialog.addChoice(label, items,"*None*");
+		Dialog.addToSameRow();
+		Dialog.addNumber("weight", 1,2,1,"");
+	}
+	Dialog.show();
+	imageselection=newArray(7);
+	weights=newArray(7);
+	String.resetBuffer;
+	for (i = 0; i < 7; i++) {
+		imageselection[i]=Dialog.getChoice()+".tiff";
+		weights[i]=Dialog.getNumber();
+		if (imageselection[i]!="*None*.tiff") {
+			open(pathraw+"Results/"+imageselection[i]);
+			run("Multiply...", "value="+weights[i]);
+			String.append("c"+(i+1)+"="+imageselection[i]+" ");
+		}
+	}
+	String.append("create");
+	run("Merge Channels...", String.buffer);
+	run("Stack to RGB");
+	saveAs("tiff", pathraw+"Results/merge.tiff");
+	run("Close All");	
+}
+
 //Continue with segmentation
 roiManager("reset");
 finalimages=pathraw+"Results/";
@@ -631,6 +670,7 @@ run("Close All");
 for (i = 0; i < markernumber; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
 }
+File.rename(finalimages+"merge.tiff",finalimages+"stitching/merge.tiff");
 File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileConfiguration.txt");
 File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv");
 
