@@ -413,7 +413,7 @@ if (mergeimages == true){
 		label="C"+(i+1)+" "+colors[i];
 		Dialog.addChoice(label, items,"*None*");
 		Dialog.addToSameRow();
-		Dialog.addNumber("weight", 1,2,1,"");
+		Dialog.addNumber("weight", 1,2,3,"");
 	}
 	Dialog.show();
 	imageselection=newArray(7);
