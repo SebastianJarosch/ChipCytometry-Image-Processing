@@ -403,7 +403,6 @@ for (i = 1; i <= totalpositions; i++) {
 if (mergeimages == true){
 		colors=newArray("Red","Green","Blue","Gray","Cyan","Magenta","Yellow");
 	items=getFileList(pathraw+"Results/");
-	Array.print(items);
 	for (i = 0; i < items.length; i++) {
 		items[i]=substring(items[i], 0, lengthOf(items[i])-5);
 	}
@@ -413,7 +412,7 @@ if (mergeimages == true){
 		label="C"+(i+1)+" "+colors[i];
 		Dialog.addChoice(label, items,"*None*");
 		Dialog.addToSameRow();
-		Dialog.addNumber("weight", 1,2,3,"");
+		Dialog.addNumber("weight", 1,1,3,"");
 	}
 	Dialog.show();
 	imageselection=newArray(7);
