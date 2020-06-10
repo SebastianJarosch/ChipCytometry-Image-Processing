@@ -920,3 +920,65 @@ function highlight_message(string,how){
 		Dialog.addMessage(string, size, "black");
 	}
 }
+
+function aggregate_detection(filename){
+	open(filename)
+	run("Duplicate...", "title=aggregate_mask.tiff");
+	run("Unsharp Mask...", "radius=100 mask=0.5");
+	run("Gaussian Blur...", "sigma=4");
+	setAutoThreshold("Intermodes dark");
+	run("Convert to Mask");
+	run("Watershed");
+	run("Analyze Particles...", "size=400-infinity pixel circularity=0.40-1.00 clear include add");
+	roiManager("Measure");
+	areas=newArray(nResults);
+	n_aggregates=0;
+	for (i = 0; i < nResults; i++) {
+		areas[i]=getResult("Area", i);
+		if (areas[i]>1000) {
+			n_aggregates=n_aggregates+1;
+		}
+	}
+	Array.getStatistics(areas, min, max, mean, stdDev);
+	print(mean);
+	return n_aggregates;
+}
+
+//Aggregate removal
+function remove_aggregates(){
+	run("Duplicate...", "title=aggregate_mask.tiff");
+	run("Unsharp Mask...", "radius=100 mask=0.5");
+	run("Gaussian Blur...", "sigma=4");
+	setAutoThreshold("Intermodes dark");
+	run("Convert to Mask");
+	run("Watershed");
+	run("Analyze Particles...", "size=400-infinity pixel circularity=0.40-1.00 clear include add");
+	counts=roiManager("count");
+	print(counts+" Aggregates have been detected");
+	print("");
+	for(i=0; i<counts; i++) {
+	    roiManager("Select", i);
+	    run("Enlarge...", "enlarge=5 pixel");
+	    roiManager("Update");
+	    progress = ((i+1)/counts)*100;
+	    print("\\Update: Aggregate ROIs updated: "+progress+" %");
+	}
+	run("Close");
+	run("Duplicate...", "title=deleted.tiff");
+	run("Duplicate...", "title=corrected.tiff");
+	selectWindow("corrected.tiff");
+	roiManager("Select All");
+	roiManager("Combine");
+	roiManager("Add");
+	roiManager("Select", roiManager("count")-1);
+	roiManager("Update");
+	run("Clear", "slice");
+	selectWindow("deleted.tiff");
+	roiManager("Select", roiManager("count")-1);
+	run("Make Inverse");
+	roiManager("Add");
+	roiManager("Select", roiManager("count")-1);
+	roiManager("Update");
+	run("Clear", "slice");
+	roiManager("delete");
+}
