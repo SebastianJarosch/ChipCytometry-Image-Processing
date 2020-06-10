@@ -430,7 +430,7 @@ if (mergeimages == true){
 	String.append("create");
 	run("Merge Channels...", String.buffer);
 	run("Stack to RGB");
-	saveAs("tiff", pathraw+"Results/merge.tiff");
+	saveAs("tiff", pathraw+"/merge.tiff");
 	run("Close All");	
 }
 
@@ -669,7 +669,7 @@ run("Close All");
 for (i = 0; i < markernumber; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
 }
-File.rename(finalimages+"merge.tiff",finalimages+"stitching/merge.tiff");
+File.rename(pathraw+"merge.tiff",finalimages+"stitching/merge.tiff");
 File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileConfiguration.txt");
 File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv");
 
@@ -921,8 +921,8 @@ function highlight_message(string,how){
 	}
 }
 
-function aggregate_detection(filename){
-	open(filename)
+function aggregate_detection(marker){
+	open(marker) //correct path!
 	run("Duplicate...", "title=aggregate_mask.tiff");
 	run("Unsharp Mask...", "radius=100 mask=0.5");
 	run("Gaussian Blur...", "sigma=4");
