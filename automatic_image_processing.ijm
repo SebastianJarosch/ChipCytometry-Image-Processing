@@ -411,7 +411,7 @@ for (i = 1; i <= totalpositions; i++) {
 
 //Create merge image
 if (mergeimages == true){
-		colors=newArray("Red","Green","Blue","Gray","Cyan","Magenta","Yellow");
+	colors=newArray("Red","Green","Blue","Gray","Cyan","Magenta","Yellow");
 	items=getFileList(pathraw+"Results/");
 	for (i = 0; i < items.length; i++) {
 		items[i]=substring(items[i], 0, lengthOf(items[i])-5);
@@ -432,11 +432,13 @@ if (mergeimages == true){
 		imageselection[i]=Dialog.getChoice()+".tiff";
 		weights[i]=Dialog.getNumber();
 		if (imageselection[i]!="*None*.tiff") {
+			print("Processing "+substring(imageselection[i],0,lengthOf(imageselection[i]-5);+" for merge...");
 			open(pathraw+"Results/"+imageselection[i]);
 			run("Multiply...", "value="+weights[i]);
 			String.append("c"+(i+1)+"="+imageselection[i]+" ");
 		}
 	}
+	print("Merging images...");
 	String.append("create");
 	run("Merge Channels...", String.buffer);
 	run("Stack to RGB");
@@ -535,6 +537,7 @@ if (segmentationstatus == true) {
 
 		
 		//Perform aggregate detection and removal
+		print("Start aggregate detection...");
 		for (i = 0; i < files.length; i++) {
 			name=substring(files[i],0,lengthOf(files[i])-5);
 			if (name!=segmentationmarker && name!=cytokeratin) {
@@ -672,11 +675,6 @@ if (segmentationstatus == true) {
 					progress=((k+1)/(total_cells)*100);
 					print("\\Update: Spillover correction for marker "+i+"/"+slices+" ("+slicename+"): "+progress+" %");
 				}
-
-				//Save the stitched images with the deleted signals for each marker
-				File.makeDirectory(finalimages+"stitching/spacialcorrected/");
-				pathspatialcorrected=finalimages+"stitching/spacialcorrected/";
-				run("Image Sequence... ", "format=TIFF use save=pathspatialcorrected");
 			}
 
 			//Finally get the Mean intensity for all cells and all markers
@@ -685,6 +683,12 @@ if (segmentationstatus == true) {
 			run("Next Slice [>]");
 			print("\\Update:"+i+" of "+slices+" markers measured");
 		}
+
+		//Save the stitched images with the deleted signals for each marker
+		File.makeDirectory(finalimages+"stitching/spacialcorrected/");
+		pathspatialcorrected=finalimages+"stitching/spacialcorrected/";
+		run("Image Sequence... ", "format=TIFF use save=pathspatialcorrected");
+				
 		saveAs("Results", finalimages+"segmentation/FL_values.csv");
 		run("Close");
 		Tcalculation = Tcalculation+((getTime-startT)/1000);
