@@ -63,38 +63,48 @@ if (clean==true) {
 
 //Dialog for selection of markers to be analyzed
 Dialog.create("Select markers for analysis");
-n=2*markernumber;
+n=3*markernumber;
 chbxlables = newArray(n);
 defaults = newArray(n);
-for (i = 0; i < markernumber*2; i=i+2) {
-	chbxlables[i]="Process "+folders[i/2];
-	chbxlables[i+1]="Intranuclear Marker";
+for (i = 0; i < markernumber*3; i=i+3) {
+	chbxlables[i]="Process "+folders[i/3];
+	chbxlables[i+1]="Intranuclear";
+	chbxlables[i+2]="Detect aggregates";
 	defaults[i] = true;
-	if(folders[i/2]=='DNA'||folders[i/2]=='Nuclei'||folders[i/2]=='FoxP3'||folders[i/2]=='GATA3'||folders[i/2]=='Ki67'){
+	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='FoxP3'||folders[i/3]=='GATA3'||folders[i/3]=='Ki67'){
 		defaults[i+1] = true;
 	}else {
 		defaults[i+1] = false;
 	}
+	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='Vimentin'||folders[i/3]=='SMA'||folders[i/3]=='Cytokeratin'||folders[i/3]=='PAN'||folders[i/3]=='EpCAM'){
+		defaults[i+2] = false;
+	}else {
+		defaults[i+2] = true;
+	}
 }
-Dialog.addCheckboxGroup(markernumber, 2, chbxlables, defaults);
+Dialog.addCheckboxGroup(markernumber, 3, chbxlables, defaults);
 Dialog.show();
 
 //Get values from the dialog
 marker=newArray(markernumber);
 intranuclear_0=newArray(markernumber);
+aggregateremoval_0=newArray(markernumber);
 markernumber_total=0;
 for (i = 0; i < markernumber; i++) {
 	marker[i]=Dialog.getCheckbox();
 	intranuclear_0[i]=Dialog.getCheckbox();
+	aggregateremoval_0[i]=Dialog.getCheckbox();
 	if (marker[i]==true) {
 		markernumber_total++;
 	}
 }
 intranuclear=newArray(markernumber_total);
+aggregateremoval=newArray(markernumber_total);
 j=0;
 for (i = 0; i < markernumber; i++) {
 	if (marker[i]==true) {
 		intranuclear[j]=intranuclear_0[i];
+		aggregateremoval[j]=aggregateremoval_0[i];
 		j++;
 	}
 }
@@ -517,6 +527,25 @@ if (segmentationstatus == true) {
 	Tsegmentation = Tsegmentation+((getTime-startT)/1000);
 	
 	if (valuecalculation == 1) {
+		
+		//get file list for all stiched images
+		files=getFileList(finalimages);
+		files=Array.delete(files, "stitching/");
+		files=Array.delete(files, "segmentation/");
+
+		
+		//Perform aggregate detection and removal
+		for (i = 0; i < files.length; i++) {
+			name=substring(files[i],0,lengthOf(files[i])-5);
+			if (name!=segmentationmarker && name!=cytokeratin) {
+				if (aggregateremoval[i]==true){
+					filepath=finalimages+files[i];
+					number_of_aggregates = aggregate_detection(name, filepath);
+					print(name+": "+number_of_aggregates+" aggregates have been detected");
+				}
+			}
+		}
+		
 		startT = getTime;
 		roiManager("reset");
 		if (sepepithel == true){
@@ -526,11 +555,6 @@ if (segmentationstatus == true) {
 		if (sepepithel == false){
 			roiManager("open", finalimages+"segmentation/all_enlarged_cells.zip")
 		}
-		
-		//Open Multi Stack and get dimensions for measurements
-		files=getFileList(finalimages);
-		files=Array.delete(files, "stitching/");
-		files=Array.delete(files, "segmentation/");
 
 		//Image sequence would change the order of the channels, therefore each channel needs to be opened idividually first.
 		for(i=0; i<files.length; i++) {
@@ -543,10 +567,14 @@ if (segmentationstatus == true) {
 		setSlice(1);
 		Stack.getDimensions(width, height, channels, slices, frames);
 		print("Number of images opened for measurement: "+slices);
-		File.makeDirectory(finalimages+"segmentation/"+"spatial_spillover_correction");
+		
+		if (spillovercorrection==true){
+			File.makeDirectory(finalimages+"segmentation/"+"spatial_spillover_correction");
+		}
 
 		//Cycle through all channels for the following block of commands
 		for (i=1;i<=slices;i++) {
+			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			
 			//Correct the surfacemarkers to get them less blurry
 			if (intranuclear[i-1]!=true){
@@ -561,7 +589,6 @@ if (segmentationstatus == true) {
 
 			//Perform spillovercorrection for all cells 
 			if (spillovercorrection==true && intranuclear[i-1]!=true){
-				slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 				File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
 				setBatchMode(true);
 				total_rois=roiManager("count");
@@ -643,7 +670,7 @@ if (segmentationstatus == true) {
 						}
 					}
 					progress=((k+1)/(total_cells)*100);
-					print("\\Update: Spillover correction for marker "+i+"/"+slices+": "+progress+" %");
+					print("\\Update: Spillover correction for marker "+i+"/"+slices+" ("+slicename+"): "+progress+" %");
 				}
 
 				//Save the stitched images with the deleted signals for each marker
@@ -666,8 +693,12 @@ if (segmentationstatus == true) {
 
 //cleanup of files and move to subfolders
 run("Close All");
+File.makeDirectory(pathraw+"/Results/stitching/Aggregate_removal");
 for (i = 0; i < markernumber; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
+	if (aggregateremoval[i]==true) {
+		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"._removed_aggregatestiff");
+	}
 }
 File.rename(pathraw+"merge.tiff",finalimages+"stitching/merge.tiff");
 File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileConfiguration.txt");
@@ -808,7 +839,7 @@ function segmentation(filename, lower_threshold, minsize, maxsize, circularitymi
     setThreshold(lower_threshold,upper);
 	setOption("BlackBackground", true);
 	waitForUser("Please adjust the threshold for the "+filename+" nuclei and press OK");
-	run("Close");
+	close("Threshold");
 	getThreshold(lower,upper);
 	print("lower threshold: "+lower);
 	print("upper threshold: "+upper);
@@ -921,64 +952,90 @@ function highlight_message(string,how){
 	}
 }
 
-function aggregate_detection(marker){
-	open(marker) //correct path!
-	run("Duplicate...", "title=aggregate_mask.tiff");
+function aggregate_detection(name, filepath){
+	setBatchMode(false);
+	roiManager("deselect");
+	setBatchMode(true);
+	open(filepath);
+	run("Duplicate...", "title="+name+"aggregate_mask.tiff");
 	run("Unsharp Mask...", "radius=100 mask=0.5");
 	run("Gaussian Blur...", "sigma=4");
 	setAutoThreshold("Intermodes dark");
 	run("Convert to Mask");
 	run("Watershed");
-	run("Analyze Particles...", "size=400-infinity pixel circularity=0.40-1.00 clear include add");
+	roiManager("reset");
+	run("Analyze Particles...", "size=400-infinity pixel circularity=0.80-1.00 clear include add");
+	run("Clear Results");
 	roiManager("Measure");
 	areas=newArray(nResults);
+	excluded_aggregates=newArray(0);
 	n_aggregates=0;
 	for (i = 0; i < nResults; i++) {
-		areas[i]=getResult("Area", i);
-		if (areas[i]>1000) {
-			n_aggregates=n_aggregates+1;
+		area=getResult("Area", i);
+		if (area<1000) {
+			Array.concat(excluded_aggregates,i);
+		}
+		if (excluded_aggregates.length>0) {
+			roiManager("select", excluded_aggregates);
+			roiManager("delete");
 		}
 	}
-	Array.getStatistics(areas, min, max, mean, stdDev);
-	print(mean);
+	n_aggregates=roiManager("count");
+	run("Close All");
+	
+	if (n_aggregates>0) {
+		setBatchMode(false);
+		open(filepath);
+		roiManager("show all with labels");
+		choices = newArray("remove aggregates","don't remove aggregates");
+		Dialog.create(n_aggregates+" Aggregates detected for "+name);
+		Dialog.addChoice("How would you like to proceed?", choices);
+		Dialog.show();
+		run("Close All");
+		setBatchMode(true);
+		open(filepath);
+		decision=Dialog.getChoice();
+		if (decision=="remove aggregates") {
+			remove_aggregates(name, filepath);
+		}
+	}
+	run("Close All");
+	close("Roi Manager");
 	return n_aggregates;
 }
 
 //Aggregate removal
-function remove_aggregates(){
-	run("Duplicate...", "title=aggregate_mask.tiff");
-	run("Unsharp Mask...", "radius=100 mask=0.5");
-	run("Gaussian Blur...", "sigma=4");
-	setAutoThreshold("Intermodes dark");
-	run("Convert to Mask");
-	run("Watershed");
-	run("Analyze Particles...", "size=400-infinity pixel circularity=0.40-1.00 clear include add");
+function remove_aggregates(name, filepath){
 	counts=roiManager("count");
-	print(counts+" Aggregates have been detected");
-	print("");
 	for(i=0; i<counts; i++) {
 	    roiManager("Select", i);
-	    run("Enlarge...", "enlarge=5 pixel");
+	    run("Enlarge...", "enlarge=8 pixel");
 	    roiManager("Update");
-	    progress = ((i+1)/counts)*100;
-	    print("\\Update: Aggregate ROIs updated: "+progress+" %");
 	}
-	run("Close");
-	run("Duplicate...", "title=deleted.tiff");
-	run("Duplicate...", "title=corrected.tiff");
-	selectWindow("corrected.tiff");
-	roiManager("Select All");
-	roiManager("Combine");
-	roiManager("Add");
+	selectWindow(name+".tiff");
+	run("Select None");
+	run("Duplicate...", "title="+name+"_deleted.tiff");
+	selectWindow(name+".tiff");
+	if (counts>1) {
+		roiManager("Select All");
+		roiManager("Combine");
+		roiManager("Add");
+	}
 	roiManager("Select", roiManager("count")-1);
 	roiManager("Update");
 	run("Clear", "slice");
-	selectWindow("deleted.tiff");
+	selectWindow(name+"_deleted.tiff");
 	roiManager("Select", roiManager("count")-1);
 	run("Make Inverse");
 	roiManager("Add");
 	roiManager("Select", roiManager("count")-1);
 	roiManager("Update");
 	run("Clear", "slice");
-	roiManager("delete");
+	selectWindow(name+".tiff");
+	save(filepath);
+	selectWindow(name+"_deleted.tiff");
+	roiManager("deselect");
+	save(substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+5))+name+"_removed_aggregates.tiff");
+	run("Close All");
 }
+
