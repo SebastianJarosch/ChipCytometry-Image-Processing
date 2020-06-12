@@ -418,11 +418,13 @@ if (mergeimages == true){
 	}
 	items=Array.concat(items,"*None*");
 	Dialog.create("Define channels for merged image");
+	default_choices=newArray("Vimentin","*None*","Cytokeratin","Nuclei","*None*","*None*","SMA");
+	default_weights=newArray(1,1,1,0.5,1,1,1);
 	for (i = 0; i < 7; i++) {
 		label="C"+(i+1)+" "+colors[i];
-		Dialog.addChoice(label, items,"*None*");
+		Dialog.addChoice(label, items,default_choices[i]);
 		Dialog.addToSameRow();
-		Dialog.addNumber("weight", 1,1,3,"");
+		Dialog.addNumber("weight", default_weights[i],1,3,"");
 	}
 	Dialog.show();
 	imageselection=newArray(7);
@@ -432,7 +434,7 @@ if (mergeimages == true){
 		imageselection[i]=Dialog.getChoice()+".tiff";
 		weights[i]=Dialog.getNumber();
 		if (imageselection[i]!="*None*.tiff") {
-			print("Processing "+substring(imageselection[i],0,lengthOf(imageselection[i]-5);+" for merge...");
+			print("Processing "+substring(imageselection[i],0,lengthOf(imageselection[i])-5)+" for merge...");
 			open(pathraw+"Results/"+imageselection[i]);
 			run("Multiply...", "value="+weights[i]);
 			String.append("c"+(i+1)+"="+imageselection[i]+" ");
