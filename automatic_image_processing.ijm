@@ -1007,6 +1007,7 @@ function aggregate_detection(name, filepath){
 	}
 	run("Close All");
 	close("Roi Manager");
+	close("Results");
 	return n_aggregates;
 }
 
@@ -1044,4 +1045,3 @@ function remove_aggregates(name, filepath){
 	save(substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+5))+name+"_removed_aggregates.tiff");
 	run("Close All");
 }
-
