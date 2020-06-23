@@ -1035,6 +1035,6 @@ function remove_aggregates(name, filepath){
 	save(filepath);
 	selectWindow(name+"_deleted.tiff");
 	roiManager("deselect");
-	save(substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+5))+name+"_removed_aggregates.tiff");
+	save(substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+4))+name+"_removed_aggregates.tiff");
 	run("Close All");
 }
