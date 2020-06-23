@@ -132,16 +132,17 @@ Dialog.addNumber(highlight_string("Radius ","i"), 0.5);
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
 Dialog.setInsets(15, 0, 0);
-Dialog.addCheckbox(highlight_string("Aggregate removal","b"), true);
+Dialog.addCheckbox(highlight_string("Aggregate removal","b"), false);
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
 Dialog.addNumber("Threshold", 60, 0, 4, "%");
 Dialog.addNumber("Min intensity", 100, 0, 4, "");
 Dialog.addHelp("<html><b>Segmentation</b><br>here you need to choose your segmentationmarker and the marker for epithelial cells, if you have selected a tissue type "+
-"containing epithelial cells. if no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
+"containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
 "<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
-"resemble a good starting point.<br><br><b>Marker consistancy check</b>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
-"choose to delete images, which are only present for some markers but not for others.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
+"resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
+"choose to delete images, which are only present for some markers but not for others.<br><br><b>Aggregate removal</b><br>Implemented, but not validated yet "+
+"This Beta version can be tried.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
 "signal is maximal allowed to be present in only one quater of the cell. The min intensity is the min grayscale value, for which a cell is considered for spacial spillover "+
 "correction<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
@@ -963,7 +964,7 @@ function aggregate_detection(name, filepath){
 	run("Convert to Mask");
 	run("Watershed");
 	roiManager("reset");
-	run("Analyze Particles...", "size=400-infinity pixel circularity=0.80-1.00 clear include add");
+	run("Analyze Particles...", "size=400-infinity pixel circularity=0.00-1.00 clear include add");
 	run("Clear Results");
 	roiManager("Measure");
 	areas=newArray(nResults);
@@ -971,13 +972,14 @@ function aggregate_detection(name, filepath){
 	n_aggregates=0;
 	for (i = 0; i < nResults; i++) {
 		area=getResult("Area", i);
-		if (area<1000) {
+		circ=getResult("Circ.", i);
+		if (circ>0.7 && area<800) {
 			excluded_aggregates=Array.concat(excluded_aggregates,i);
 		}
-		if (excluded_aggregates.length>0) {
-			roiManager("select", excluded_aggregates);
-			roiManager("delete");
-		}
+	}
+	if (excluded_aggregates.length>0) {
+		roiManager("select", excluded_aggregates);
+		roiManager("delete");
 	}
 	n_aggregates=roiManager("count");
 	run("Close All");
@@ -1036,5 +1038,7 @@ function remove_aggregates(name, filepath){
 	selectWindow(name+"_deleted.tiff");
 	roiManager("deselect");
 	save(substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+4))+name+"_removed_aggregates.tiff");
+	roiManager("reset");
+	run("Clear Results");
 	run("Close All");
 }
