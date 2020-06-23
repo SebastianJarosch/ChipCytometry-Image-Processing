@@ -63,23 +63,17 @@ if (clean==true) {
 
 //Dialog for selection of markers to be analyzed
 Dialog.create("Select markers for analysis");
-n=3*markernumber;
+n=2*markernumber;
 chbxlables = newArray(n);
 defaults = newArray(n);
-for (i = 0; i < markernumber*3; i=i+3) {
-	chbxlables[i]="Process "+folders[i/3];
+for (i = 0; i < markernumber*2; i=i+2) {
+	chbxlables[i]="Process "+folders[i/2];
 	chbxlables[i+1]="Intranuclear";
-	chbxlables[i+2]="Detect aggregates";
 	defaults[i] = true;
-	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='FoxP3'||folders[i/3]=='GATA3'||folders[i/3]=='Ki67'){
+	if(folders[i/2]=='DNA'||folders[i/2]=='Nuclei'||folders[i/2]=='FoxP3'||folders[i/2]=='GATA3'||folders[i/2]=='GATA-3'||folders[i/2]=='Ki67'){
 		defaults[i+1] = true;
 	}else {
 		defaults[i+1] = false;
-	}
-	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='Vimentin'||folders[i/3]=='SMA'||folders[i/3]=='Cytokeratin'||folders[i/3]=='PAN'||folders[i/3]=='EpCAM'){
-		defaults[i+2] = false;
-	}else {
-		defaults[i+2] = true;
 	}
 }
 Dialog.addCheckboxGroup(markernumber, 3, chbxlables, defaults);
@@ -88,23 +82,19 @@ Dialog.show();
 //Get values from the dialog
 marker=newArray(markernumber);
 intranuclear_0=newArray(markernumber);
-aggregateremoval_0=newArray(markernumber);
 markernumber_total=0;
 for (i = 0; i < markernumber; i++) {
 	marker[i]=Dialog.getCheckbox();
 	intranuclear_0[i]=Dialog.getCheckbox();
-	aggregateremoval_0[i]=Dialog.getCheckbox();
 	if (marker[i]==true) {
 		markernumber_total++;
 	}
 }
 intranuclear=newArray(markernumber_total);
-aggregateremoval=newArray(markernumber_total);
 j=0;
 for (i = 0; i < markernumber; i++) {
 	if (marker[i]==true) {
 		intranuclear[j]=intranuclear_0[i];
-		aggregateremoval[j]=aggregateremoval_0[i];
 		j++;
 	}
 }
@@ -142,6 +132,8 @@ Dialog.addNumber(highlight_string("Radius ","i"), 0.5);
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
 Dialog.setInsets(15, 0, 0);
+Dialog.addCheckbox(highlight_string("Aggregate removal","b"), true);
+Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
 Dialog.addNumber("Threshold", 60, 0, 4, "%");
 Dialog.addNumber("Min intensity", 100, 0, 4, "");
@@ -172,6 +164,7 @@ outlier_threshold=Dialog.getNumber();
 minimum_correction=Dialog.getCheckbox();
 minimum_radius=Dialog.getNumber();
 checkconsistancy=Dialog.getCheckbox();
+detect_aggregates=Dialog.getCheckbox();
 spillovercorrection=Dialog.getCheckbox();
 totalpositions=xsize*ysize+(firsttile-1);
 distribution_threshold=Dialog.getNumber();
@@ -543,7 +536,7 @@ if (segmentationstatus == true) {
 		for (i = 0; i < files.length; i++) {
 			name=substring(files[i],0,lengthOf(files[i])-5);
 			if (name!=segmentationmarker && name!=cytokeratin) {
-				if (aggregateremoval[i]==true){
+				if (detect_aggregates==true){
 					filepath=finalimages+files[i];
 					number_of_aggregates = aggregate_detection(name, filepath);
 					print(name+": "+number_of_aggregates+" aggregates have been detected");
@@ -979,7 +972,7 @@ function aggregate_detection(name, filepath){
 	for (i = 0; i < nResults; i++) {
 		area=getResult("Area", i);
 		if (area<1000) {
-			Array.concat(excluded_aggregates,i);
+			excluded_aggregates=Array.concat(excluded_aggregates,i);
 		}
 		if (excluded_aggregates.length>0) {
 			roiManager("select", excluded_aggregates);
