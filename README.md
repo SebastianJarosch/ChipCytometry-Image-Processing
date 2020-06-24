@@ -21,7 +21,7 @@ Macros and codes from the publication "Publication Jarosch et al..."
 ### 1. Image export
 a) Adjust Background and contrast value in Zellkraftwerk app in order to get the best snapshot from the HDR image <br>
 b) Export images for each channel in the Zellkraftwerk app as 16 bit grayscale tiff images.<br>
-c) Copy the Scanjob folders located in <i>/Chipfolder/scanjobs/</i> for each channel in a new directory named with the chipID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files! </b> <br>
+c) Copy the Scanjob folders located in *Chipfolder/scanjobs/* for each channel in a new directory named with the chipID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files! </b> <br>
 d) Rename the scanjob folders with their channel names <br>
 e) To save space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br> This cleanup procedure is now also automated in the script.
 
@@ -31,7 +31,11 @@ a) Run the script automatic_image_processing.ijm in ImageJ <br>
 b) Select channels and specify the parameters and press OK <br>
 c) Adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining<br>
 
-### 3. Write FCS files in MATLAB
+### 3. Quality control
+a) Check the stitched images in Results/stitching to see if the are in a good quality for all sub-positions
+b) You can review the segmentation by loading the stitched Nuclei image and the saved ROIs from Results/segmentation into imageJ or by simply reviewing the mask image from the segmentation folder. 
+
+### 4. Write FCS files in MATLAB
 a) Copy the FL_values.csv and channels.csv from the generated Results folder in your MATLAB working directory <br>
 b) Run the script FCS_conversion_ChipCytometry.m <br>
 c) The .fcs file will be written in your MATLAB working directory and can be analyzed with any FlowCytometry analysis software
