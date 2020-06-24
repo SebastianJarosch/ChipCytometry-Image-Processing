@@ -6,7 +6,8 @@ Macros and codes from the publication "Publication Jarosch et al..."
 ## System reqirements
 * ImageJ 1.53a or higher <br>
 * Matlab 2018b or higher <br>
-* Python 3.7+ for clustering and neighborhood analysis
+* Python 3.7+ for clustering and neighborhood analysis <br>
+* FlowCytometry software for analyzing .fcs files (e.g. FowJo)
 
 ## Third party packages, plugins and scripts
 * Scanpy (https://github.com/theislab/scanpy) <br>
@@ -15,6 +16,7 @@ Macros and codes from the publication "Publication Jarosch et al..."
 ## Getting started
 * Install Fiji
 * Download the scripts from this repository
+* Run Plugins --> Install PlugIn... and select the automatic_image_processing.ijm file from this repository
 * transfer the matlab script as well as the writeFCS script in your matlab working directory
 
 ## Workflow
