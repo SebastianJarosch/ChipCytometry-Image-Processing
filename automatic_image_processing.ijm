@@ -110,6 +110,11 @@ for (i = 0; i < markernumber; i++) {
 //Create dialog with options for analysis
 Dialog.create("Specify analysis");
 Dialog.setInsets(0, 0, 0);
+Dialog.addCheckbox(highlight_string("Extract Erys from AF","b"), true);
+choices=Array.concat(folders,"*None*");
+Dialog.setInsets(0, 0, 0);
+Dialog.addChoice("BG channel", folders, occurance_in_array(folders, newArray("PerCP_BG","PerCP","BG","*None*")));
+Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Create merge image","b"), true);
 Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Segmentation","b"), true);
@@ -156,6 +161,8 @@ Dialog.addHelp("<html><b>Segmentation</b><br>here you need to choose your segmen
 Dialog.show();
 
 //Get values from the dialog
+erys=Dialog.getCheckbox();
+ery_channel=Dialog.getChoice();
 mergeimages=Dialog.getCheckbox();
 segmentationstatus=Dialog.getCheckbox();
 segmentationmarker=Dialog.getChoice();
@@ -287,7 +294,7 @@ if (checkconsistancy == true && inconsistant == true) {
 print("\\Clear");
 print(ChipID);
 for (i = 0; i < markernumber; i++) {
-	if (marker[i] == 1) {
+	if (marker[i] == 1 && marker[i] != ery_channel) {
 		print(folders[i]);
 	}
 }
@@ -316,7 +323,7 @@ startT = getTime;
 
 //generate black images for stitching which cover the whole area
 setBatchMode(true);
-for (i = 1; i <= totalpositions; i++) {
+for (i = firsttile; i <= totalpositions; i++) {
 	if (i<10) {
 		newImage(i, "16-bit black", 1392, 1040, 1);
 		run("16-bit");
@@ -347,7 +354,7 @@ for (j = 0; j < markernumber; j++) {
 	if(marker[j] == 1){
 		print(folders[j]);
 		print("");
-		for (i = 1; i <= totalpositions; i++) {
+		for (i = firsttile; i <= totalpositions; i++) {
 			if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
 				open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
 				run("16-bit");
@@ -396,7 +403,7 @@ for (j = 0; j < markernumber; j++) {
 }
 
 //delete unstiched images
-for (i = 1; i <= totalpositions; i++) {
+for (i = firsttile; i <= totalpositions; i++) {
 	if (i<10) {
 		File.delete(pathraw+"00"+i+".tif");
 		print("\\Update:Image 00"+i+" deleted");
@@ -409,6 +416,34 @@ for (i = 1; i <= totalpositions; i++) {
 		File.delete(pathraw+i+".tif");
 		print("\\Update:Image "+i+" deleted");
 	}
+}
+//Extract erys from autofluorescence
+if (erys==true){
+	open(pathraw+"Results/"+ery_channel+".tiff");
+	run("Duplicate...", "title=Erymask.tiff");
+	run("Threshold...");
+	getThreshold(lower,upper);
+    setThreshold(15000,upper);
+	setOption("BlackBackground", true);
+	close("Threshold");
+	roiManager("reset");
+	run("Analyze Particles...", "size=0-infinity pixel clear include add");
+	counts=roiManager("count");
+	selectWindow(ery_channel+".tiff");
+	if (counts>1) {
+		roiManager("Select All");
+		roiManager("Combine");
+		roiManager("Add");
+	}
+	roiManager("Select", roiManager("count")-1);	
+	run("Make Inverse");
+	roiManager("Add");
+	roiManager("Select", roiManager("count")-1);
+	roiManager("Update");
+	run("Clear", "slice");
+	save(pathraw+"Results/Erythrocytes.tiff");
+	run("Close All");
+	File.delete(pathraw+"Results/"+ery_channel+".tiff");
 }
 
 //Create merge image
@@ -584,7 +619,7 @@ if (segmentationstatus == true) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			
 			//Correct the surfacemarkers to get them less blurry
-			if (intranuclear[i-1]!=true){
+			if (intranuclear[i-1]!=true && slicename != "Erythrocytes"){
 				if(outlier_correction==true){
 					run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
 				}
@@ -595,7 +630,7 @@ if (segmentationstatus == true) {
 			}
 
 			//Perform spillovercorrection for all cells 
-			if (spillovercorrection==true && intranuclear[i-1]!=true){
+			if (spillovercorrection==true && intranuclear[i-1]!=true && slicename != "Erythrocytes"){
 				File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
 				setBatchMode(true);
 				total_rois=roiManager("count");
@@ -682,8 +717,10 @@ if (segmentationstatus == true) {
 			}
 
 			//Finally get the Mean intensity for all cells and all markers
-			roiManager("Select All");
-			roiManager("Measure");
+			if (slicename != "Erythrocytes"){
+				roiManager("Select All");
+				roiManager("Measure");
+			}
 			run("Next Slice [>]");
 			print("\\Update:"+i+" of "+slices+" markers measured");
 		}
@@ -708,6 +745,7 @@ for (i = 0; i < markernumber; i++) {
 		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"._removed_aggregatestiff");
 	}
 }
+File.rename(finalimages+"Erythrocytes.tiff",finalimages+"stitching/Erythrocytes.tiff");
 File.rename(pathraw+"merge.tiff",finalimages+"stitching/merge.tiff");
 File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileConfiguration.txt");
 File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv");
