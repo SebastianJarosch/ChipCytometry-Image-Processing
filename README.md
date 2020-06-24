@@ -32,7 +32,7 @@ b) Select channels and specify the parameters and press OK <br>
 c) Adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining<br>
 
 ### 3. Quality control
-a) Check the stitched images in Results/stitching to see if the are in a good quality for all sub-positions
+a) Check the stitched images in Results/stitching to see if the are in a good quality for all sub-positions<br>
 b) You can review the segmentation by loading the stitched Nuclei image and the saved ROIs from Results/segmentation into imageJ or by simply reviewing the mask image from the segmentation folder. 
 
 ### 4. Write FCS files in MATLAB
@@ -41,7 +41,7 @@ b) Run the script FCS_conversion_ChipCytometry.m <br>
 c) The .fcs file will be written in your MATLAB working directory and can be analyzed with any FlowCytometry analysis software
 
 ## Clustering of cells and neighborhood analysis using scanpy
-Scanpy was developed by the Theis Lab for analyzing scRNA sequencing data and is one of the leading packages in this field. Here we feed in a [cells x proteins] matrix instead of the [cells x genes] matrix to use the pipeline for our imaging data. Cells and their fluorescence values can be imported into scanpy as adata object via the FL_values.csv and channels.csv files. An example of how to process data can be found in clustering_chipcytometry_cells.ipynb. For further information on the API of the scanpy package, check the scanpy documentation (https://scanpy.readthedocs.io/en/stable/). <br><br>
+Scanpy was developed by the Theis Lab for analyzing scRNA sequencing data and is one of the leading packages in this field. Here we feed in a [cells x proteins] matrix instead of the [cells x genes] matrix to use the pipeline for our imaging data. Cells and their fluorescence values can be imported into scanpy as adata object via the FL_values.csv and channels.csv files. An example of how to process data can be found in clustering_chipcytometry_cells.ipynb. For further information on the API of the scanpy package, check the scanpy documentation (https://scanpy.readthedocs.io/en/stable/).<br>
 
 ## Sample data
 The folder sample data contains Chipcytometry data from an inflamed human colon biopsy shown in Figure 2 of the paper.
