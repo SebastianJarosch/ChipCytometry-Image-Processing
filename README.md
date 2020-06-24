@@ -1,4 +1,4 @@
-# ChipCytometry Image Processing
+﻿# ChipCytometry Image Processing
 Macros and codes from the publication "Publication Jarosch et al..."
 
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
@@ -21,7 +21,7 @@ Macros and codes from the publication "Publication Jarosch et al..."
 ### 1. Image export
 a) Adjust Background and contrast value in Zellkraftwerk app in order to get the best snapshot from the HDR image <br>
 b) Export images for each channel in the Zellkraftwerk app as 16 bit grayscale tiff images.<br>
-c) Copy the Scanjob folders for each channel in a new directory named with the chipID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files! </b> <br>
+c) Copy the Scanjob folders located in <i>/Chipfolder/scanjobs/</i> for each channel in a new directory named with the chipID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files! </b> <br>
 d) Rename the scanjob folders with their channel names <br>
 e) To save space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br> This cleanup procedure is now also automated in the script.
 
