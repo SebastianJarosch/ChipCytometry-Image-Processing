@@ -43,6 +43,10 @@ Dialog.setInsets(0, 0, 0);
 highlight_message("of the .tiff files needed for the","i");
 Dialog.setInsets(0, 0, 0);
 highlight_message("analysis to save disk space.","i");
+Dialog.addHelp("<html><b>Chip & tissue properties</b><br>The selection of the tissue type will affect the default values for some parameters, like the enlargement of ROIs "+
+"which is reduced in denser tissues to avoid spillover from neighboring cells.<br><br><b>Size of the tissue section</b><br>The size in tiles can be evaluated from the Cell Explorer App by looking at the overview image. "+
+"the y size needs to be specified starting from the first tile.<br><br><b>Clean folder</b><br>Deletes the folders <cite>posref</cite>, <cite>flimages</cite>, as well as the <cite>.blob32, .xml, .png</cite> and <cite>.csv</cite> files. "+
+"The only files remaining are the .tiff files in the HDRFL folders for each position.<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
 //Get values from the dialog
@@ -77,6 +81,10 @@ for (i = 0; i < markernumber*2; i=i+2) {
 	}
 }
 Dialog.addCheckboxGroup(markernumber, 3, chbxlables, defaults);
+Dialog.addHelp("<html><b>Marker checkboxes</b> (left side)<br>Here the markers which should be included in the quantification should be selected. "+
+"Please make sure at this point, that all markers have been aquired with a good quality and the backrund subtraction worked properly for all markers.<br><br>"+
+"<b>Marker type</b> (right side)<br>If the marker is located intranuclear, the checkbox needs to be selected. This selection will change the processing of images before quantification and will decide "+
+"if spacial spillover correction is performed on the marker.<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
 //Get values from the dialog
@@ -141,8 +149,8 @@ Dialog.addHelp("<html><b>Segmentation</b><br>here you need to choose your segmen
 "containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
 "<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
 "resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
-"choose to delete images, which are only present for some markers but not for others.<br><br><b>Aggregate removal</b><br>Implemented, but not validated yet "+
-"This Beta version can be tried.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
+"choose to delete images, which are only present for some markers but not for others.<br><br><b>Aggregate removal</b><br><cite>Implemented, but not validated yet. "+
+"This beta version can be tested if markers are prone to have a high number of dye aggregates.</cite><br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
 "signal is maximal allowed to be present in only one quater of the cell. The min intensity is the min grayscale value, for which a cell is considered for spacial spillover "+
 "correction<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
