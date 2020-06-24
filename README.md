@@ -24,8 +24,8 @@ Macros and codes from the publication "Publication Jarosch et al..."
 a) Adjust Background and contrast value in Zellkraftwerk app in order to get the best snapshot from the HDR image <br>
 b) Export images for each channel in the Zellkraftwerk app as 16 bit grayscale tiff images.<br>
 c) Copy the Scanjob folders located in *Chipfolder/scanjobs/* for each channel in a new directory named with the chipID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files! </b> <br>
-d) Rename the scanjob folders with their channel names <br>
-e) To save space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br> This cleanup procedure is now also automated in the script.
+d) Rename the scanjob folders with their corresponding epitope names <br>
+e) To save disk space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br> This cleanup procedure is can be automated with the ImageJ plugin as well.
 
 ### 2. Data generation in ImageJ
 *Dependent on the size of a chip and the number of segmented cells, the spillover-correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the correctness of the input parameters first* <br><br>
@@ -40,7 +40,7 @@ b) You can review the segmentation by loading the stitched Nuclei image and the 
 ### 4. Write FCS files in MATLAB
 a) Copy the FL_values.csv and channels.csv from the generated Results folder in your MATLAB working directory <br>
 b) Run the script FCS_conversion_ChipCytometry.m <br>
-c) The .fcs file will be written in your MATLAB working directory and can be analyzed with any FlowCytometry analysis software
+c) The ChipID.fcs file will be written in your MATLAB working directory and can be analyzed with any FlowCytometry analysis software
 
 ## Clustering of cells and neighborhood analysis using scanpy
 Scanpy was developed by the Theis Lab for analyzing scRNA sequencing data and is one of the leading packages in this field. Here we feed in a [cells x proteins] matrix instead of the [cells x genes] matrix to use the pipeline for our imaging data. Cells and their fluorescence values can be imported into scanpy as adata object via the FL_values.csv and channels.csv files. An example of how to process data can be found in clustering_chipcytometry_cells.ipynb. For further information on the API of the scanpy package, check the scanpy documentation (https://scanpy.readthedocs.io/en/stable/).<br>
@@ -52,4 +52,4 @@ The folder sample data contains Chipcytometry data from an inflamed human colon 
 1. Wolf, F., Angerer, P. & Theis, F. SCANPY: large-scale single-cell gene expression data analysis. Genome Biol 19, 15 (2018). https://doi.org/10.1186/s13059-017-1382-0
 2. Schindelin, J., Arganda-Carreras, I., Frise, E. et al. Fiji: an open-source platform for biological-image analysis. Nat Methods 9, 676–682 (2012). https://doi.org/10.1038/nmeth.2019
 3. Lin J-R, Izar B, Wang S, Yapp C, Mei S, Shah P, Santagata S, Sorger PK. Highly multiplexed immunofluorescence imaging of human tissues and tumors using t-CyCIF and conventional optical microscopes. eLife. 2018 Jul 11;7:e31657. https://doi.org/10.7554/eLife.31657 
-4.
+4. Jakub Nedbal. writeFCS(fname, DATA, TEXT, OTHER) (https://www.mathworks.com/matlabcentral/fileexchange/42603-writefcs-fname-data-text-other), MATLAB Central File Exchange. Retrieved June 24, 2020. 
