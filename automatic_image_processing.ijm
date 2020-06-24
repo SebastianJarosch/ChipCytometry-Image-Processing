@@ -704,7 +704,7 @@ run("Close All");
 File.makeDirectory(pathraw+"/Results/stitching/Aggregate_removal");
 for (i = 0; i < markernumber; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
-	if (aggregateremoval[i]==true) {
+	if (detect_aggregates==true) {
 		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"._removed_aggregatestiff");
 	}
 }
