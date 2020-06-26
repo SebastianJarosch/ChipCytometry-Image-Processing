@@ -116,7 +116,7 @@ Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Extract Erys from AF","b"), true);
 choices=Array.concat(folders,"*None*");
 Dialog.setInsets(0, 0, 0);
-Dialog.addChoice("BG channel", folders, occurance_in_array(folders, newArray("PerCP_BG","PerCP","BG","*None*")));
+Dialog.addChoice("BG channel", folders, occurance_in_array(folders, newArray("PerCP_BG","PerCP","BG","Erys","Erys_AF","*None*")));
 Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Create merge image","b"), true);
 Dialog.setInsets(0, 0, 0);
@@ -128,7 +128,7 @@ sepepithel=false;
 
 if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
 	choices=Array.concat(folders,"No staining");
-	epithelial_names=newArray("PAN","Cytokeratin","PAN-Cytokeratin","EpCAM");
+	epithelial_names=newArray("PAN","Cytokeratin","PAN-Cytokeratin","EpCAM","No staining");
 	Dialog.setInsets(0, 0, 0);
 	Dialog.addChoice("Epithelial cells", choices, occurance_in_array(folders, epithelial_names));
 	sepepithel=true;
@@ -190,11 +190,6 @@ distribution_threshold=Dialog.getNumber();
 minCorrInt=Dialog.getNumber();
 distribution_threshold=distribution_threshold/25;
 error_cells=newArray();
-
-if (erys==true) {
-	n=index(folders, ery_channel);
-	intranuclear=Array.deleteIndex(intranuclear,n);
-}
 
 
 //Check for conistancy of positions between markers, using the segmentation marker as refference
@@ -299,9 +294,7 @@ if (checkconsistancy == true && inconsistant == true) {
 print("\\Clear");
 print(ChipID);
 for (i = 0; i < markernumber_total; i++) {
-	if (folders[i] != ery_channel) {
 		print(folders[i]);
-	}
 }
 selectWindow("Log");
 saveAs("Text", pathraw+"channels.csv"); 
@@ -430,8 +423,8 @@ if (erys==true){
     setThreshold(15000,upper);
 	setOption("BlackBackground", true);
 	close("Threshold");
-	roiManager("reset");
 	print("BG channel processed for erythrocyte detection");
+	roiManager("reset");
 	run("Analyze Particles...", "size=100-infinity pixel clear include add");
 	vesselcount=roiManager("count");
 	print(vesselcount+" vessels have been detected");
@@ -446,11 +439,13 @@ if (erys==true){
 		roiManager("Select", roiManager("count")-1);
 		roiManager("Update");
 		run("Clear", "slice");
-		save(pathraw+"Results/Erythrocytes.tiff");
+		save(pathraw+"Results/"+ery_channel+".tiff");
 		run("Close All");
-		File.delete(pathraw+"Results/"+ery_channel+".tiff");
 		print("Erythrocyte detection finished...");
-	}else {print("No vessels detected...");}
+	}else {
+		print("No vessels detected...");
+		erys=false;
+	}
 }
 
 //Create merge image
@@ -463,7 +458,7 @@ if (mergeimages == true){
 	items=Array.concat(items,"*None*");
 	Dialog.create("Define channels for merged image");
 	default_choices=newArray("Vimentin","*None*","Cytokeratin","Nuclei","*None*","*None*","SMA");
-	if (erys==true) {default_choices=newArray("Erythrocytes","*None*","Cytokeratin","Nuclei","Vimentin","*None*","SMA");}
+	if (erys==true) {default_choices=newArray("Erys_AF","*None*","Cytokeratin","Nuclei","Vimentin","*None*","SMA");}
 	default_weights=newArray(1,1,1,0.5,1,1,1);
 	if (erys==true) {default_weights=newArray(1,1,1,0.5,0.7,1,1);}
 	for (i = 0; i < 7; i++) {
@@ -561,8 +556,8 @@ if (segmentationstatus == true) {
 		run("Close All");
 
 		//actually perform the segmentation (function returns the cellnumber)
-		epithelialcellnumber=segmentation("Epithel",7000,75,2000,0.2);
-		LPcellnumber=segmentation("Lamina_propria",3000,70,400,0.55);
+		epithelialcellnumber=segmentation(ensize,true,"Epithel",7000,65535,75,2000,0.2);
+		LPcellnumber=segmentation(ensize,true,"Lamina_propria",3000,65535,70,400,0.55);
 		cellnumber=0;
 		
 	}else {
@@ -570,10 +565,18 @@ if (segmentationstatus == true) {
 	run("Duplicate...", "title=all.tiff");
 	saveAs("tiff", finalimages+"segmentation/all.tiff");
 	run("Close All");
-	cellnumber=segmentation("all",3000,70,400,0.55);
+	cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);
 	epithelialcellnumber=0;
 	LPcellnumber=0;
 	}
+	if (erys==true) {
+		open(finalimages+ery_channel+".tiff");
+		saveAs("tiff", finalimages+"segmentation/Erythrocytes.tiff");
+		erycellnumber=segmentation(1,false,"Erythrocytes",24000,35000,20,300,0.3);
+	}
+
+
+	
 	Tsegmentation = Tsegmentation+((getTime-startT)/1000);
 	
 	if (valuecalculation == 1) {
@@ -593,10 +596,9 @@ if (segmentationstatus == true) {
 					filepath=finalimages+files[i];
 					number_of_aggregates = aggregate_detection(name, filepath);
 					print(name+": "+number_of_aggregates+" aggregates have been detected");
-					
+					total_aggregate_count=total_aggregate_count+number_of_aggregates;
 				}
 			}
-			total_aggregate_count=total_aggregate_count+number_of_aggregates;
 		}
 		
 		startT = getTime;
@@ -608,10 +610,14 @@ if (segmentationstatus == true) {
 		if (sepepithel == false){
 			roiManager("open", finalimages+"segmentation/all_enlarged_cells.zip")
 		}
+		if (erys == true){
+			roiManager("open", finalimages+"segmentation/Erythrocytes_enlarged_cells.zip")
+		}
+
 
 		//Image sequence would change the order of the channels, therefore each channel needs to be opened idividually first.
 		for(i=0; i<files.length; i++) {
-			if (files[i]!="Erythrocytes.tiff") {open(finalimages+files[i]);}
+			open(finalimages+files[i]);
 		}
 		run("Images to Stack", "name=Stack title=[] use");
 		run("Clear Results");
@@ -641,7 +647,7 @@ if (segmentationstatus == true) {
 			}
 
 			//Perform spillovercorrection for all cells
-			if (spillovercorrection==true && intranuclear[i-1]!=true){
+			if (spillovercorrection==true && intranuclear[i-1]!=true && slicename!=ery_channel){
 				File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
 				setBatchMode(true);
 				total_rois=roiManager("count");
@@ -841,7 +847,7 @@ if (valuecalculation == 1) {
 			print(error_cells.length+" cells yielded an error due to their shape");
 		}
 	}
-	if (detect_aggregates=true) {
+	if (detect_aggregates==true) {
 		print("Aggregate detection has been performed for all channels");
 		print(total_aggregate_count+" aggregates have been detected in total");
 	}
@@ -906,16 +912,16 @@ function index(a, value) {
 	return -1;
 }
 
-function segmentation(filename, lower_threshold, minsize, maxsize, circularitymin) {
+function segmentation(ensize, blur, filename, lower_threshold, upper_threshold, minsize, maxsize, circularitymin) {
 	//Let the user adjust the default threshold for the nuclei
 	setBatchMode(false);
 	open(finalimages+"segmentation/"+filename+".tiff");
 	selectWindow(filename+".tiff");
-	run("Gaussian Blur...", "sigma=1.00");
+	if (blur==true) {run("Gaussian Blur...", "sigma=1.00");}
 	run("Threshold...");
 	setAutoThreshold("Yen dark");
 	getThreshold(lower,upper);
-    setThreshold(lower_threshold,upper);
+    setThreshold(lower_threshold,upper_threshold);
 	setOption("BlackBackground", true);
 	waitForUser("Please adjust the threshold for the "+filename+" nuclei and press OK");
 	close("Threshold");
