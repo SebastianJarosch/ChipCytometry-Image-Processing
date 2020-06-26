@@ -98,14 +98,17 @@ for (i = 0; i < markernumber; i++) {
 		markernumber_total++;
 	}
 }
+folders_new=newArray(markernumber_total);
 intranuclear=newArray(markernumber_total);
 j=0;
 for (i = 0; i < markernumber; i++) {
 	if (marker[i]==true) {
 		intranuclear[j]=intranuclear_0[i];
+		folders_new[j]=folders[i];
 		j++;
 	}
 }
+folders=folders_new;
 
 //Create dialog with options for analysis
 Dialog.create("Specify analysis");
@@ -188,6 +191,12 @@ minCorrInt=Dialog.getNumber();
 distribution_threshold=distribution_threshold/25;
 error_cells=newArray();
 
+if (erys==true) {
+	n=index(folders, ery_channel);
+	intranuclear=Array.deleteIndex(intranuclear,n);
+}
+
+
 //Check for conistancy of positions between markers, using the segmentation marker as refference
 segmentationmarkerpositions = getFileList(pathraw+"/"+segmentationmarker);
 for (j = 0; j < segmentationmarkerpositions.length; j++) {
@@ -196,31 +205,29 @@ for (j = 0; j < segmentationmarkerpositions.length; j++) {
 
 positions = newArray();
 inconsistant = false;
-for (i = 0; i < markernumber; i++) {
-	if(marker[i] == true){
-		next = getFileList(pathraw+folders[i]);
-		for (k = 0; k < next.length; k++) {
-			next[k]=substring(next[k], 0, lengthOf(next[k])-1);
-		}
-		if (next.length > segmentationmarkerpositions.length){
-			n = next.length - segmentationmarkerpositions.length;
-			errors = ArrayDifference(segmentationmarkerpositions, next);
-			Array.sort(errors);
-			print(n+" additional positions detected in "+folders[i]+":");
-			Array.print(errors);
-			inconsistant = true;
-		}
-		if (next.length < segmentationmarkerpositions.length){
-			n = segmentationmarkerpositions.length-next.length;
-			errors = ArrayDifference(segmentationmarkerpositions, next);
-			Array.sort(errors);
-			print(n+" positions are missing in "+folders[i]+":");
-			Array.print(errors);
-			inconsistant = true;
-		}
-		if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
-			print("Check OK for "+folders[i]);
-		}
+for (i = 0; i < markernumber_total; i++) {
+	next = getFileList(pathraw+folders[i]);
+	for (k = 0; k < next.length; k++) {
+		next[k]=substring(next[k], 0, lengthOf(next[k])-1);
+	}
+	if (next.length > segmentationmarkerpositions.length){
+		n = next.length - segmentationmarkerpositions.length;
+		errors = ArrayDifference(segmentationmarkerpositions, next);
+		Array.sort(errors);
+		print(n+" additional positions detected in "+folders[i]+":");
+		Array.print(errors);
+		inconsistant = true;
+	}
+	if (next.length < segmentationmarkerpositions.length){
+		n = segmentationmarkerpositions.length-next.length;
+		errors = ArrayDifference(segmentationmarkerpositions, next);
+		Array.sort(errors);
+		print(n+" positions are missing in "+folders[i]+":");
+		Array.print(errors);
+		inconsistant = true;
+	}
+	if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
+		print("Check OK for "+folders[i]);
 	}
 }
 
@@ -235,8 +242,8 @@ if (checkconsistancy == true && inconsistant == true) {
 		exit();
 	}
 	if (decision=="delete additional positions") {
-		for (i = 0; i < markernumber; i++) {
-			if(marker[i] == true && folders[i] != segmentationmarker){
+		for (i = 0; i < markernumber_total; i++) {
+			if(folders[i] != segmentationmarker){
 				next = getFileList(pathraw+folders[i]);
 				for (k = 0; k < next.length; k++) {
 					next[k]=substring(next[k], 0, lengthOf(next[k])-1);
@@ -271,20 +278,18 @@ if (checkconsistancy == true && inconsistant == true) {
 	for (j = 0; j < segmentationmarkerpositions.length; j++) {
 			segmentationmarkerpositions[j]=substring(segmentationmarkerpositions[j], 0, lengthOf(segmentationmarkerpositions[j])-1);
 	}
-	for (i = 0; i < markernumber; i++) {
-		if(marker[i] == true){
-			next = getFileList(pathraw+folders[i]);
-			for (k = 0; k < next.length; k++) {
-				next[k]=substring(next[k], 0, lengthOf(next[k])-1);
-			}
-			if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
-				print("Check OK for "+folders[i]);
-				inconsistant=false;
-			}
-			if (next.length != segmentationmarkerpositions.length) {
-				print("Check failed for "+folders[i]);
-				exit("data is still inconsistant!");
-			}
+	for (i = 0; i < markernumber_total; i++) {
+		next = getFileList(pathraw+folders[i]);
+		for (k = 0; k < next.length; k++) {
+			next[k]=substring(next[k], 0, lengthOf(next[k])-1);
+		}
+		if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
+			print("Check OK for "+folders[i]);
+			inconsistant=false;
+		}
+		if (next.length != segmentationmarkerpositions.length) {
+			print("Check failed for "+folders[i]);
+			exit("data is still inconsistant!");
 		}
 	}
 }
@@ -293,8 +298,8 @@ if (checkconsistancy == true && inconsistant == true) {
 //clear the Log save sheet for Channel renaming
 print("\\Clear");
 print(ChipID);
-for (i = 0; i < markernumber; i++) {
-	if (marker[i] == 1 && marker[i] != ery_channel) {
+for (i = 0; i < markernumber_total; i++) {
+	if (folders[i] != ery_channel) {
 		print(folders[i]);
 	}
 }
@@ -349,57 +354,55 @@ Tempty = Tempty+((getTime-startT)/1000);
 startT = getTime;
 
 //get files from folder and rename according to their directory
-for (j = 0; j < markernumber; j++) {
+for (j = 0; j < markernumber_total; j++) {
 	setBatchMode(true);
-	if(marker[j] == 1){
-		print(folders[j]);
-		print("");
-		for (i = firsttile; i <= totalpositions; i++) {
-			if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
-				open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
-				run("16-bit");
-				saveAs("Tiff", pathraw+"00"+i);
-				close();
-				print("\\Update: Image renamed successfully: "+i);
-			}
-			if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
-				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
-				run("16-bit");
-				saveAs("Tiff", pathraw+"0"+i);
-				close();
-				print("\\Update: Image renamed successfully: "+i);
-			}
-			if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
-				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
-				run("16-bit");
-				saveAs("Tiff", pathraw+i);
-				close();
-				print("\\Update: Image renamed successfully: "+i);
-			}						
+	print(folders[j]);
+	print("");
+	for (i = firsttile; i <= totalpositions; i++) {
+		if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
+			open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
+			run("16-bit");
+			saveAs("Tiff", pathraw+"00"+i);
+			close();
+			print("\\Update: Image renamed successfully: "+i);
 		}
-		print ("processing time renaming ="+(getTime-startT)/1000+"s");
-		
-		//Save image sequence to the stiching folder and overwrite corresponding black tiles
-		run("Image Sequence...", "open=pathraw");
-		stackname=getTitle();
-		windowname=stackname;
-		selectWindow(windowname);
-		run("Image Sequence... ", "format=TIFF use save=pathraw");
-		close();
-		print("Images saved");
-		Trenaming = Trenaming+((getTime-startT)/1000);
-		startT = getTime;
-		
-		//Run stitching Plugin from ImageJ with files generated in the folder
-		run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
-		"first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] "+
-		"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save memory (but be slower)] "+
-		"image_output=[Fuse and display]");
-		File.makeDirectory(pathraw+"Results");
-		saveAs("tiff", pathraw+"Results/"+folders[j]+".tiff");
-		close();
-		Tstitching = Tstitching+((getTime-startT)/1000);
+		if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
+			open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+			run("16-bit");
+			saveAs("Tiff", pathraw+"0"+i);
+			close();
+			print("\\Update: Image renamed successfully: "+i);
+		}
+		if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
+			open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+			run("16-bit");
+			saveAs("Tiff", pathraw+i);
+			close();
+			print("\\Update: Image renamed successfully: "+i);
+		}						
 	}
+	print ("processing time renaming ="+(getTime-startT)/1000+"s");
+	
+	//Save image sequence to the stiching folder and overwrite corresponding black tiles
+	run("Image Sequence...", "open=pathraw");
+	stackname=getTitle();
+	windowname=stackname;
+	selectWindow(windowname);
+	run("Image Sequence... ", "format=TIFF use save=pathraw");
+	close();
+	print("Images saved");
+	Trenaming = Trenaming+((getTime-startT)/1000);
+	startT = getTime;
+	
+	//Run stitching Plugin from ImageJ with files generated in the folder
+	run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
+	"first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] "+
+	"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save memory (but be slower)] "+
+	"image_output=[Fuse and display]");
+	File.makeDirectory(pathraw+"Results");
+	saveAs("tiff", pathraw+"Results/"+folders[j]+".tiff");
+	close();
+	Tstitching = Tstitching+((getTime-startT)/1000);
 }
 
 //delete unstiched images
@@ -419,6 +422,7 @@ for (i = firsttile; i <= totalpositions; i++) {
 }
 //Extract erys from autofluorescence
 if (erys==true){
+	print("Started erythrocyte detection...");
 	open(pathraw+"Results/"+ery_channel+".tiff");
 	run("Duplicate...", "title=Erymask.tiff");
 	run("Threshold...");
@@ -427,23 +431,26 @@ if (erys==true){
 	setOption("BlackBackground", true);
 	close("Threshold");
 	roiManager("reset");
-	run("Analyze Particles...", "size=0-infinity pixel clear include add");
-	counts=roiManager("count");
+	print("BG channel processed for erythrocyte detection");
+	run("Analyze Particles...", "size=100-infinity pixel clear include add");
+	vesselcount=roiManager("count");
+	print(vesselcount+" vessels have been detected");
 	selectWindow(ery_channel+".tiff");
-	if (counts>1) {
+	if (vesselcount>1) {
 		roiManager("Select All");
 		roiManager("Combine");
 		roiManager("Add");
-	}
-	roiManager("Select", roiManager("count")-1);	
-	run("Make Inverse");
-	roiManager("Add");
-	roiManager("Select", roiManager("count")-1);
-	roiManager("Update");
-	run("Clear", "slice");
-	save(pathraw+"Results/Erythrocytes.tiff");
-	run("Close All");
-	File.delete(pathraw+"Results/"+ery_channel+".tiff");
+		roiManager("Select", roiManager("count")-1);	
+		run("Make Inverse");
+		roiManager("Add");
+		roiManager("Select", roiManager("count")-1);
+		roiManager("Update");
+		run("Clear", "slice");
+		save(pathraw+"Results/Erythrocytes.tiff");
+		run("Close All");
+		File.delete(pathraw+"Results/"+ery_channel+".tiff");
+		print("Erythrocyte detection finished...");
+	}else {print("No vessels detected...");}
 }
 
 //Create merge image
@@ -456,7 +463,9 @@ if (mergeimages == true){
 	items=Array.concat(items,"*None*");
 	Dialog.create("Define channels for merged image");
 	default_choices=newArray("Vimentin","*None*","Cytokeratin","Nuclei","*None*","*None*","SMA");
+	if (erys==true) {default_choices=newArray("Erythrocytes","*None*","Cytokeratin","Nuclei","Vimentin","*None*","SMA");}
 	default_weights=newArray(1,1,1,0.5,1,1,1);
+	if (erys==true) {default_weights=newArray(1,1,1,0.5,0.7,1,1);}
 	for (i = 0; i < 7; i++) {
 		label="C"+(i+1)+" "+colors[i];
 		Dialog.addChoice(label, items,default_choices[i]);
@@ -576,7 +585,7 @@ if (segmentationstatus == true) {
 
 		
 		//Perform aggregate detection and removal
-		print("Start aggregate detection...");
+		if (detect_aggregates==true){print("Start aggregate detection...");}
 		for (i = 0; i < files.length; i++) {
 			name=substring(files[i],0,lengthOf(files[i])-5);
 			if (name!=segmentationmarker && name!=cytokeratin) {
@@ -584,8 +593,10 @@ if (segmentationstatus == true) {
 					filepath=finalimages+files[i];
 					number_of_aggregates = aggregate_detection(name, filepath);
 					print(name+": "+number_of_aggregates+" aggregates have been detected");
+					
 				}
 			}
+			total_aggregate_count=total_aggregate_count+number_of_aggregates;
 		}
 		
 		startT = getTime;
@@ -600,7 +611,7 @@ if (segmentationstatus == true) {
 
 		//Image sequence would change the order of the channels, therefore each channel needs to be opened idividually first.
 		for(i=0; i<files.length; i++) {
-			open(finalimages+files[i]);
+			if (files[i]!="Erythrocytes.tiff") {open(finalimages+files[i]);}
 		}
 		run("Images to Stack", "name=Stack title=[] use");
 		run("Clear Results");
@@ -619,7 +630,7 @@ if (segmentationstatus == true) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			
 			//Correct the surfacemarkers to get them less blurry
-			if (intranuclear[i-1]!=true && slicename != "Erythrocytes"){
+			if (intranuclear[i-1]!=true){
 				if(outlier_correction==true){
 					run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
 				}
@@ -629,8 +640,8 @@ if (segmentationstatus == true) {
 				}
 			}
 
-			//Perform spillovercorrection for all cells 
-			if (spillovercorrection==true && intranuclear[i-1]!=true && slicename != "Erythrocytes"){
+			//Perform spillovercorrection for all cells
+			if (spillovercorrection==true && intranuclear[i-1]!=true){
 				File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
 				setBatchMode(true);
 				total_rois=roiManager("count");
@@ -738,10 +749,10 @@ if (segmentationstatus == true) {
 
 //cleanup of files and move to subfolders
 run("Close All");
-File.makeDirectory(pathraw+"/Results/stitching/Aggregate_removal");
-for (i = 0; i < markernumber; i++) {
+for (i = 0; i < markernumber_total; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
 	if (detect_aggregates==true) {
+		File.makeDirectory(pathraw+"/Results/stitching/Aggregate_removal");
 		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"._removed_aggregatestiff");
 	}
 }
@@ -774,20 +785,31 @@ if (inconsistant == true){
 print("Size of the stiched image: "+xsize+" x "+ysize);
 print("Number of the first image: "+firsttile);
 print("Number of positions to be stitched: "+(xsize*ysize));
-for (i = 0; i < markernumber; i++) {
-	if (marker[i] == 1) {
-		numberM = numberM+1;
-	}
-}
-print("markers analyzed: "+numberM);
+print("markers analyzed: "+markernumber_total);
 print("Time for generating empty positions: "+Tempty+" s");
 print("Time for renaming positions: "+Trenaming+" s");
 Ttotal = (getTime-startTtotal)/60000;
 print("Total time needed for the automatic processing: "+Ttotal+" min");
 
 print("************************************************************************************");
-print("--------------------------------Stitching----------------------------------------");
+print("---------------------------------Stitching----------------------------------------");
 print("Time for stitching: "+Tstitching+" s");
+if (erys==true) {
+	print("Erythrocytes were detected from "+ery_channel);
+	print("In total, "+vesselcount+" vessels have been detected");
+}
+
+if (mergeimages==true) {
+	print("The following channels have been merged to a RGB image:");
+	String.resetBuffer;
+	for (i = 0; i < imageselection.length; i++) {
+		if (imageselection[i]!="*None*.tiff") {
+			String.append(substring(imageselection[i],0,lengthOf(imageselection[i])-5)+"("+colors[i]+") ");
+		}
+	}
+	print(String.buffer);
+}
+
 if (segmentationstatus == 1) {
 	print("************************************************************************************");
 	print("------------------------------Segmentation-------------------------------------");
@@ -819,6 +841,11 @@ if (valuecalculation == 1) {
 			print(error_cells.length+" cells yielded an error due to their shape");
 		}
 	}
+	if (detect_aggregates=true) {
+		print("Aggregate detection has been performed for all channels");
+		print(total_aggregate_count+" aggregates have been detected in total");
+	}
+
 }
 selectWindow("Log");
 saveAs("Text", finalimages+"summary.txt"); 
@@ -871,6 +898,12 @@ function occurance_in_array(array, search){
 		}
 	}
 	return occurance;
+}
+
+function index(a, value) {
+	for (i=0; i<a.length; i++)
+		if (a[i]==value) {return i;}
+	return -1;
 }
 
 function segmentation(filename, lower_threshold, minsize, maxsize, circularitymin) {
