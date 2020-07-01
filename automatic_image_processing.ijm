@@ -145,6 +145,8 @@ Dialog.addNumber(highlight_string("Radius ","i"), 2);
 Dialog.addNumber(highlight_string("Threshold ","i"), 50);
 Dialog.addCheckbox(highlight_string("Minimum filter","u"), true);
 Dialog.addNumber(highlight_string("Radius ","i"), 0.5);
+Dialog.addCheckbox(highlight_string("Subtract background","u"), true);
+Dialog.addNumber(highlight_string("Rolling ball radius ","i"), 10);
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
 Dialog.setInsets(15, 0, 0);
@@ -182,6 +184,8 @@ outlier_radius=Dialog.getNumber();
 outlier_threshold=Dialog.getNumber();
 minimum_correction=Dialog.getCheckbox();
 minimum_radius=Dialog.getNumber();
+subtract_BG=Dialog.getCheckbox();
+rolling_radius=Dialog.getNumber();
 checkconsistancy=Dialog.getCheckbox();
 detect_aggregates=Dialog.getCheckbox();
 spillovercorrection=Dialog.getCheckbox();
@@ -501,6 +505,29 @@ if (segmentationstatus == true) {
 	startT=getTime();
 	open(finalimages+segmentationmarker+".tiff");
 
+	//Measure tissue size
+	print("Measuring the size of the tissue section...");
+	run("Duplicate...", "title=tissue_size.tiff");
+	run("Gaussian Blur...", "sigma=20");
+	setAutoThreshold("Minimum dark");
+	run("Convert to Mask");
+	roiManager("reset");
+	run("Analyze Particles...", "size=10000-infinity pixel clear include add");
+	run("Clear Results");
+	roiManager("Measure");
+	area=0;
+	for (i = 0; i < nResults; i++) {
+		area=area+getResult("Area", i);
+	}
+	File.makeDirectory(finalimages+"segmentation/"+"tissue_size");
+	selectWindow("tissue_size.tiff");
+	saveAs("tiff", finalimages+"segmentation/tissue_size/tissue_size_mask.tiff");
+	roiManager("save", finalimages+"segmentation/tissue_size/area_ROIs.zip");
+	roiManager("reset");
+	run("Close All");
+
+	print("starting segmentation");
+	open(finalimages+segmentationmarker+".tiff");
 	if (sepepithel == true){
 
 		//Run segmentation for Crypts to subtract them from the total nuclei
@@ -636,14 +663,14 @@ if (segmentationstatus == true) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			
 			//Correct the surfacemarkers to get them less blurry
-			if (intranuclear[i-1]!=true){
-				if(outlier_correction==true){
-					run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
-				}
-				run("Median...", "radius=1");
-				if(minimum_correction==true){
-					run("Minimum...", "radius="+minimum_radius);
-				}
+			if(outlier_correction==true){
+				run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
+			}
+			if(minimum_correction==true && intranuclear[i-1]!=true){
+				run("Minimum...", "radius="+minimum_radius);
+			}
+			if(subtract_BG==true){
+				run("Subtract Background...", "rolling="+rolling_radius);
 			}
 
 			//Perform spillovercorrection for all cells
@@ -785,6 +812,7 @@ print("Summary of automatic image processing");
 print("************************************************************************************");
 print("-----------------------general project information---------------------------");
 print("Tissue type on Chip "+ChipID+": "+organism+" "+tissue);
+if (segmentationstatus == true){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
 if (inconsistant == true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
