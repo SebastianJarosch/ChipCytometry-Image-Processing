@@ -524,7 +524,8 @@ if (segmentationstatus == true) {
 	saveAs("tiff", finalimages+"segmentation/tissue_size/tissue_size_mask.tiff");
 	roiManager("save", finalimages+"segmentation/tissue_size/area_ROIs.zip");
 	roiManager("reset");
-	run("Close All");
+	close("Results");
+	close("*");
 
 	print("starting segmentation");
 	open(finalimages+segmentationmarker+".tiff");
@@ -661,15 +662,18 @@ if (segmentationstatus == true) {
 		//Cycle through all channels for the following block of commands
 		for (i=1;i<=slices;i++) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
-			
+			print("Starting value calculation for "+slicename);
 			//Correct the surfacemarkers to get them less blurry
 			if(outlier_correction==true){
+				print("Performing outlier correction...");
 				run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
 			}
 			if(minimum_correction==true && intranuclear[i-1]!=true){
+				print("Performing minimum correction...");
 				run("Minimum...", "radius="+minimum_radius);
 			}
 			if(subtract_BG==true){
+				print("Subtracting BG...");
 				run("Subtract Background...", "rolling="+rolling_radius);
 			}
 
