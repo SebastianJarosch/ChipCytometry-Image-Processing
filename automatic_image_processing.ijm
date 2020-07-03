@@ -604,7 +604,7 @@ if (segmentationstatus == true) {
 	if (erys==true) {
 		open(finalimages+ery_channel+".tiff");
 		saveAs("tiff", finalimages+"segmentation/Erythrocytes.tiff");
-		erycellnumber=segmentation(1,false,"Erythrocytes",20000,30000,20,300,0.3);
+		erycellnumber=segmentation(1,false,"Erythrocytes",20000,30000,15,400,0.25);
 	}
 
 
@@ -838,7 +838,7 @@ print("---------------------------------Stitching-------------------------------
 print("Time for stitching: "+Tstitching+" s");
 if (erys==true) {
 	print("Erythrocytes were detected from "+ery_channel);
-	print("In total, "+vesselcount+" vessels have been detected");
+	print(erycellnumber+" heve been segmented in "+vesselcount+" vessels");
 }
 
 if (mergeimages==true) {
