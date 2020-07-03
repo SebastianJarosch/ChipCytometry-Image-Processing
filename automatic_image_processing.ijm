@@ -604,7 +604,7 @@ if (segmentationstatus == true) {
 	if (erys==true) {
 		open(finalimages+ery_channel+".tiff");
 		saveAs("tiff", finalimages+"segmentation/Erythrocytes.tiff");
-		erycellnumber=segmentation(1,false,"Erythrocytes",24000,35000,20,300,0.3);
+		erycellnumber=segmentation(1,false,"Erythrocytes",20000,30000,20,300,0.3);
 	}
 
 
