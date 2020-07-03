@@ -450,7 +450,8 @@ if (erys==true){
 		save(pathraw+"Results/"+ery_channel+".tiff");
 		run("Close All");
 		print("Erythrocyte detection finished...");
-	}else {
+	}
+else {
 		print("No vessels detected...");
 		erys=false;
 	}
@@ -513,7 +514,7 @@ if (segmentationstatus == true) {
 	print("Measuring the size of the tissue section...");
 	run("Duplicate...", "title=tissue_size.tiff");
 	run("Gaussian Blur...", "sigma=20");
-	setAutoThreshold("Minimum dark");
+	setAutoThreshold("Mean dark");
 	run("Convert to Mask");
 	roiManager("reset");
 	run("Analyze Particles...", "size=10000-infinity pixel clear include add");
@@ -532,7 +533,8 @@ if (segmentationstatus == true) {
 	close("*");
 
 	print("starting segmentation");
-	open(finalimages+segmentationmarker+".tiff");
+
+	open(finalimages+segmentationmarker+".tiff");
 	if (sepepithel == true){
 
 		//Run segmentation for Crypts to subtract them from the total nuclei
@@ -666,7 +668,8 @@ if (segmentationstatus == true) {
 		//Cycle through all channels for the following block of commands
 		for (i=1;i<=slices;i++) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
-			print("Starting value calculation for "+slicename);
+			
+print("Starting value calculation for "+slicename);
 			//Correct the surfacemarkers to get them less blurry
 			if(outlier_correction==true){
 				print("Performing outlier correction...");
@@ -957,7 +960,8 @@ function segmentation(ensize, blur, filename, lower_threshold, upper_threshold, 
 	setBatchMode(false);
 	open(finalimages+"segmentation/"+filename+".tiff");
 	selectWindow(filename+".tiff");
-	if (blur==true) {run("Gaussian Blur...", "sigma=1.00");}
+	if (blur==true) {run("Gaussian Blur...", "sigma=1.00");
+}
 	run("Threshold...");
 	setAutoThreshold("Yen dark");
 	getThreshold(lower,upper);
