@@ -116,7 +116,7 @@ Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Extract Erys from AF","b"), true);
 choices=Array.concat(folders,"*None*");
 Dialog.setInsets(0, 0, 0);
-Dialog.addChoice("BG channel", folders, occurance_in_array(folders, newArray("PerCP_BG","PerCP","BG","*None*")));
+Dialog.addChoice("BG channel", folders, occurance_in_array(folders, newArray("PerCP_BG","PerCP","BG","Erys","Erys_AF","*None*")));
 Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Create merge image","b"), true);
 Dialog.setInsets(0, 0, 0);
@@ -128,7 +128,7 @@ sepepithel=false;
 
 if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
 	choices=Array.concat(folders,"No staining");
-	epithelial_names=newArray("PAN","Cytokeratin","PAN-Cytokeratin","EpCAM");
+	epithelial_names=newArray("PAN","Cytokeratin","PAN-Cytokeratin","EpCAM","No staining");
 	Dialog.setInsets(0, 0, 0);
 	Dialog.addChoice("Epithelial cells", choices, occurance_in_array(folders, epithelial_names));
 	sepepithel=true;
@@ -137,14 +137,16 @@ ensize=3;
 if (tissue=="spleen/LN") {
 	ensize=2;
 }
-Dialog.addNumber("Enlarge ROIs by", ensize,0,1, "pixel");
+Dialog.addNumber("Enlarge ROIs by", ensize,0,4, "pixel");
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("FL-Value calculation","b"), true);
 Dialog.addCheckbox(highlight_string("Remove outliers","u"), true);
-Dialog.addNumber(highlight_string("Radius ","i"), 2);
-Dialog.addNumber(highlight_string("Threshold ","i"), 50);
+Dialog.addNumber(highlight_string("Radius ","i"), 2,0,4,"pixel");
+Dialog.addNumber(highlight_string("Threshold ","i"), 50,0,4,"");
 Dialog.addCheckbox(highlight_string("Minimum filter","u"), true);
-Dialog.addNumber(highlight_string("Radius ","i"), 0.5);
+Dialog.addNumber(highlight_string("Radius ","i"), 0.5,0,4,"pixel");
+Dialog.addCheckbox(highlight_string("Subtract background","u"), true);
+Dialog.addNumber(highlight_string("Rolling ball radius ","i"), 10,0,4,"pixel");
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
 Dialog.setInsets(15, 0, 0);
@@ -153,7 +155,11 @@ Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
 Dialog.addNumber("Threshold", 60, 0, 4, "%");
 Dialog.addNumber("Min intensity", 100, 0, 4, "");
-Dialog.addHelp("<html><b>Segmentation</b><br>here you need to choose your segmentationmarker and the marker for epithelial cells, if you have selected a tissue type "+
+Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detected from a early PerCP Background channel and will be segmented for quantification as well. "+
+"Select the channel from the list of processed channels for erythrocyte detection. This channel will also be used for intensity quantifications later on.<br><br>"+
+"<b>Create merge image</b><br>To get an overview about the tissue architechture, up to 7 channels can be merged in this step. You will be asked to select them after the stitching is finished. "+
+"By default, Vimentin, SMA, Nuclei and Cytokeratin are selected here. Channels can be weighted by a factor where 1 means a default merge of the full-intensity image.<br><br>"+
+"<b>Segmentation</b><br>here you need to choose your segmentationmarker and the marker for epithelial cells, if you have selected a tissue type "+
 "containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
 "<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
 "resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
@@ -182,6 +188,8 @@ outlier_radius=Dialog.getNumber();
 outlier_threshold=Dialog.getNumber();
 minimum_correction=Dialog.getCheckbox();
 minimum_radius=Dialog.getNumber();
+subtract_BG=Dialog.getCheckbox();
+rolling_radius=Dialog.getNumber();
 checkconsistancy=Dialog.getCheckbox();
 detect_aggregates=Dialog.getCheckbox();
 spillovercorrection=Dialog.getCheckbox();
@@ -190,11 +198,6 @@ distribution_threshold=Dialog.getNumber();
 minCorrInt=Dialog.getNumber();
 distribution_threshold=distribution_threshold/25;
 error_cells=newArray();
-
-if (erys==true) {
-	n=index(folders, ery_channel);
-	intranuclear=Array.deleteIndex(intranuclear,n);
-}
 
 
 //Check for conistancy of positions between markers, using the segmentation marker as refference
@@ -299,9 +302,7 @@ if (checkconsistancy == true && inconsistant == true) {
 print("\\Clear");
 print(ChipID);
 for (i = 0; i < markernumber_total; i++) {
-	if (folders[i] != ery_channel) {
 		print(folders[i]);
-	}
 }
 selectWindow("Log");
 saveAs("Text", pathraw+"channels.csv"); 
@@ -430,8 +431,8 @@ if (erys==true){
     setThreshold(15000,upper);
 	setOption("BlackBackground", true);
 	close("Threshold");
-	roiManager("reset");
 	print("BG channel processed for erythrocyte detection");
+	roiManager("reset");
 	run("Analyze Particles...", "size=100-infinity pixel clear include add");
 	vesselcount=roiManager("count");
 	print(vesselcount+" vessels have been detected");
@@ -446,11 +447,14 @@ if (erys==true){
 		roiManager("Select", roiManager("count")-1);
 		roiManager("Update");
 		run("Clear", "slice");
-		save(pathraw+"Results/Erythrocytes.tiff");
+		save(pathraw+"Results/"+ery_channel+".tiff");
 		run("Close All");
-		File.delete(pathraw+"Results/"+ery_channel+".tiff");
 		print("Erythrocyte detection finished...");
-	}else {print("No vessels detected...");}
+	}
+else {
+		print("No vessels detected...");
+		erys=false;
+	}
 }
 
 //Create merge image
@@ -463,7 +467,7 @@ if (mergeimages == true){
 	items=Array.concat(items,"*None*");
 	Dialog.create("Define channels for merged image");
 	default_choices=newArray("Vimentin","*None*","Cytokeratin","Nuclei","*None*","*None*","SMA");
-	if (erys==true) {default_choices=newArray("Erythrocytes","*None*","Cytokeratin","Nuclei","Vimentin","*None*","SMA");}
+	if (erys==true) {default_choices=newArray("Erys_AF","*None*","Cytokeratin","Nuclei","Vimentin","*None*","SMA");}
 	default_weights=newArray(1,1,1,0.5,1,1,1);
 	if (erys==true) {default_weights=newArray(1,1,1,0.5,0.7,1,1);}
 	for (i = 0; i < 7; i++) {
@@ -506,6 +510,31 @@ if (segmentationstatus == true) {
 	startT=getTime();
 	open(finalimages+segmentationmarker+".tiff");
 
+	//Measure tissue size
+	print("Measuring the size of the tissue section...");
+	run("Duplicate...", "title=tissue_size.tiff");
+	run("Gaussian Blur...", "sigma=20");
+	setAutoThreshold("Mean dark");
+	run("Convert to Mask");
+	roiManager("reset");
+	run("Analyze Particles...", "size=10000-infinity pixel clear include add");
+	run("Clear Results");
+	roiManager("Measure");
+	area=0;
+	for (i = 0; i < nResults; i++) {
+		area=area+getResult("Area", i);
+	}
+	File.makeDirectory(finalimages+"segmentation/"+"tissue_size");
+	selectWindow("tissue_size.tiff");
+	saveAs("tiff", finalimages+"segmentation/tissue_size/tissue_size_mask.tiff");
+	roiManager("save", finalimages+"segmentation/tissue_size/area_ROIs.zip");
+	roiManager("reset");
+	close("Results");
+	close("*");
+
+	print("starting segmentation");
+
+	open(finalimages+segmentationmarker+".tiff");
 	if (sepepithel == true){
 
 		//Run segmentation for Crypts to subtract them from the total nuclei
@@ -561,8 +590,8 @@ if (segmentationstatus == true) {
 		run("Close All");
 
 		//actually perform the segmentation (function returns the cellnumber)
-		epithelialcellnumber=segmentation("Epithel",7000,75,2000,0.2);
-		LPcellnumber=segmentation("Lamina_propria",3000,70,400,0.55);
+		epithelialcellnumber=segmentation(ensize,true,"Epithel",7000,65535,75,2000,0.2);
+		LPcellnumber=segmentation(ensize,true,"Lamina_propria",3000,65535,70,400,0.55);
 		cellnumber=0;
 		
 	}else {
@@ -570,10 +599,18 @@ if (segmentationstatus == true) {
 	run("Duplicate...", "title=all.tiff");
 	saveAs("tiff", finalimages+"segmentation/all.tiff");
 	run("Close All");
-	cellnumber=segmentation("all",3000,70,400,0.55);
+	cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);
 	epithelialcellnumber=0;
 	LPcellnumber=0;
 	}
+	if (erys==true) {
+		open(finalimages+ery_channel+".tiff");
+		saveAs("tiff", finalimages+"segmentation/Erythrocytes.tiff");
+		erycellnumber=segmentation(1,false,"Erythrocytes",20000,30000,15,400,0.25);
+	}
+
+
+	
 	Tsegmentation = Tsegmentation+((getTime-startT)/1000);
 	
 	if (valuecalculation == 1) {
@@ -593,10 +630,9 @@ if (segmentationstatus == true) {
 					filepath=finalimages+files[i];
 					number_of_aggregates = aggregate_detection(name, filepath);
 					print(name+": "+number_of_aggregates+" aggregates have been detected");
-					
+					total_aggregate_count=total_aggregate_count+number_of_aggregates;
 				}
 			}
-			total_aggregate_count=total_aggregate_count+number_of_aggregates;
 		}
 		
 		startT = getTime;
@@ -608,10 +644,14 @@ if (segmentationstatus == true) {
 		if (sepepithel == false){
 			roiManager("open", finalimages+"segmentation/all_enlarged_cells.zip")
 		}
+		if (erys == true){
+			roiManager("open", finalimages+"segmentation/Erythrocytes_enlarged_cells.zip")
+		}
+
 
 		//Image sequence would change the order of the channels, therefore each channel needs to be opened idividually first.
 		for(i=0; i<files.length; i++) {
-			if (files[i]!="Erythrocytes.tiff") {open(finalimages+files[i]);}
+			open(finalimages+files[i]);
 		}
 		run("Images to Stack", "name=Stack title=[] use");
 		run("Clear Results");
@@ -629,19 +669,23 @@ if (segmentationstatus == true) {
 		for (i=1;i<=slices;i++) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			
+print("Starting value calculation for "+slicename);
 			//Correct the surfacemarkers to get them less blurry
-			if (intranuclear[i-1]!=true){
-				if(outlier_correction==true){
-					run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
-				}
-				run("Median...", "radius=1");
-				if(minimum_correction==true){
-					run("Minimum...", "radius="+minimum_radius);
-				}
+			if(outlier_correction==true){
+				print("Performing outlier correction...");
+				run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
+			}
+			if(minimum_correction==true && intranuclear[i-1]!=true){
+				print("Performing minimum correction...");
+				run("Minimum...", "radius="+minimum_radius);
+			}
+			if(subtract_BG==true){
+				print("Subtracting BG...");
+				run("Subtract Background...", "rolling="+rolling_radius);
 			}
 
 			//Perform spillovercorrection for all cells
-			if (spillovercorrection==true && intranuclear[i-1]!=true){
+			if (spillovercorrection==true && intranuclear[i-1]!=true && slicename!=ery_channel){
 				File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
 				setBatchMode(true);
 				total_rois=roiManager("count");
@@ -779,13 +823,14 @@ print("Summary of automatic image processing");
 print("************************************************************************************");
 print("-----------------------general project information---------------------------");
 print("Tissue type on Chip "+ChipID+": "+organism+" "+tissue);
+if (segmentationstatus == true){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
 if (inconsistant == true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
 print("Size of the stiched image: "+xsize+" x "+ysize);
 print("Number of the first image: "+firsttile);
 print("Number of positions to be stitched: "+(xsize*ysize));
-print("markers analyzed: "+markernumber_total);
+print("Markers analyzed: "+markernumber_total);
 print("Time for generating empty positions: "+Tempty+" s");
 print("Time for renaming positions: "+Trenaming+" s");
 Ttotal = (getTime-startTtotal)/60000;
@@ -796,7 +841,6 @@ print("---------------------------------Stitching-------------------------------
 print("Time for stitching: "+Tstitching+" s");
 if (erys==true) {
 	print("Erythrocytes were detected from "+ery_channel);
-	print("In total, "+vesselcount+" vessels have been detected");
 }
 
 if (mergeimages==true) {
@@ -819,9 +863,14 @@ if (segmentationstatus == 1) {
 	print("Enlargement of ROIs: "+ensize+" pixel");
 	if (sepepithel == true) {print("Number of epithelial cells: "+epithelialcellnumber+" Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
 	if (sepepithel == true) {print("Number of lamina propria cells: "+LPcellnumber+" Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
+	if (erys == true && sepepithel == true) {print("Number of Erythrocytes: "+erycellnumber+" Threshold = ("+threshold_values[4]+"/"+threshold_values[5]+")");}
 	totalcellnumber=epithelialcellnumber+LPcellnumber+cellnumber;
 	print("Total cells segmented: "+totalcellnumber);
+	if (erys==true) {
+		print(erycellnumber+" heve been segmented in "+vesselcount+" vessels");
+	}
 	if (sepepithel == false) {print("Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
+	if (erys == true && sepepithel == false) {print("Number of Erythrocytes: "+erycellnumber+" Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
 	print("Time for cell recognition: "+Tsegmentation+" s");
 }
 if (valuecalculation == 1) {
@@ -841,7 +890,7 @@ if (valuecalculation == 1) {
 			print(error_cells.length+" cells yielded an error due to their shape");
 		}
 	}
-	if (detect_aggregates=true) {
+	if (detect_aggregates==true) {
 		print("Aggregate detection has been performed for all channels");
 		print(total_aggregate_count+" aggregates have been detected in total");
 	}
@@ -906,16 +955,17 @@ function index(a, value) {
 	return -1;
 }
 
-function segmentation(filename, lower_threshold, minsize, maxsize, circularitymin) {
+function segmentation(ensize, blur, filename, lower_threshold, upper_threshold, minsize, maxsize, circularitymin) {
 	//Let the user adjust the default threshold for the nuclei
 	setBatchMode(false);
 	open(finalimages+"segmentation/"+filename+".tiff");
 	selectWindow(filename+".tiff");
-	run("Gaussian Blur...", "sigma=1.00");
+	if (blur==true) {run("Gaussian Blur...", "sigma=1.00");
+}
 	run("Threshold...");
 	setAutoThreshold("Yen dark");
 	getThreshold(lower,upper);
-    setThreshold(lower_threshold,upper);
+    setThreshold(lower_threshold,upper_threshold);
 	setOption("BlackBackground", true);
 	waitForUser("Please adjust the threshold for the "+filename+" nuclei and press OK");
 	close("Threshold");
