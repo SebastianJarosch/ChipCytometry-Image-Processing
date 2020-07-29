@@ -669,7 +669,7 @@ if (segmentationstatus == true) {
 		for (i=1;i<=slices;i++) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			
-print("Starting value calculation for "+slicename);
+			print("Starting value calculation for "+slicename);
 			//Correct the surfacemarkers to get them less blurry
 			if(outlier_correction==true){
 				print("Performing outlier correction...");
@@ -777,7 +777,7 @@ print("Starting value calculation for "+slicename);
 				roiManager("Measure");
 			}
 			run("Next Slice [>]");
-			print("\\Update:"+i+" of "+slices+" markers measured");
+			print(i+" of "+slices+" markers measured");
 		}
 
 		//Save the stitched images with the deleted signals for each marker
