@@ -862,16 +862,16 @@ if (segmentationstatus == 1) {
 	print("Segmentationmarker: "+segmentationmarker);
 	if (sepepithel == true) {print("epithelial cell marker: "+cytokeratin);}
 	print("Enlargement of ROIs: "+ensize+" pixel");
-	if (sepepithel == true) {print("Number of epithelial cells: "+epithelialcellnumber+" Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
-	if (sepepithel == true) {print("Number of lamina propria cells: "+LPcellnumber+" Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
-	if (erys == true && sepepithel == true) {print("Number of Erythrocytes: "+erycellnumber+" Threshold = ("+threshold_values[4]+"/"+threshold_values[5]+")");}
+	if (sepepithel == true) {print("Number of epithelial cells: "+epithelialcellnumber+"; Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
+	if (sepepithel == true) {print("Number of lamina propria cells: "+LPcellnumber+"; Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
+	if (erys == true && sepepithel == true) {print("Number of Erythrocytes: "+erycellnumber+"; Threshold = ("+threshold_values[4]+"/"+threshold_values[5]+")");}
 	totalcellnumber=epithelialcellnumber+LPcellnumber+cellnumber;
 	print("Total cells segmented: "+totalcellnumber);
 	if (erys==true) {
 		print(erycellnumber+" heve been segmented in "+vesselcount+" vessels");
 	}
 	if (sepepithel == false) {print("Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
-	if (erys == true && sepepithel == false) {print("Number of Erythrocytes: "+erycellnumber+" Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
+	if (erys == true && sepepithel == false) {print("Number of Erythrocytes: "+erycellnumber+"; Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
 	print("Time for cell recognition: "+Tsegmentation+" s");
 }
 if (valuecalculation == 1) {
