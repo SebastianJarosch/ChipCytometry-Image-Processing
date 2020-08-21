@@ -622,6 +622,7 @@ if (segmentationstatus == true) {
 
 		
 		//Perform aggregate detection and removal
+		total_aggregate_count=0;
 		if (detect_aggregates==true){print("Start aggregate detection...");}
 		for (i = 0; i < files.length; i++) {
 			name=substring(files[i],0,lengthOf(files[i])-5);
@@ -672,15 +673,15 @@ if (segmentationstatus == true) {
 			print("Starting value calculation for "+slicename);
 			//Correct the surfacemarkers to get them less blurry
 			if(outlier_correction==true){
-				print("Performing outlier correction...");
+				print("\\Update: Performing outlier correction...");
 				run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
 			}
 			if(minimum_correction==true && intranuclear[i-1]!=true){
-				print("Performing minimum correction...");
+				print("\\Update: Performing minimum correction...");
 				run("Minimum...", "radius="+minimum_radius);
 			}
 			if(subtract_BG==true){
-				print("Subtracting BG...");
+				print("\\Update: Subtracting BG for marker "+i+"/"+slices+" ("+slicename+")...");
 				run("Subtract Background...", "rolling="+rolling_radius);
 			}
 
@@ -777,7 +778,6 @@ if (segmentationstatus == true) {
 				roiManager("Measure");
 			}
 			run("Next Slice [>]");
-			print(i+" of "+slices+" markers measured");
 		}
 
 		//Save the stitched images with the deleted signals for each marker
@@ -797,7 +797,8 @@ for (i = 0; i < markernumber_total; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
 	if (detect_aggregates==true) {
 		File.makeDirectory(pathraw+"/Results/stitching/Aggregate_removal");
-		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"._removed_aggregatestiff");
+		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"_removed_aggregates.tiff");
+		File.rename(finalimages+folders[i]+"_removed_aggregates.zip", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"_removed_aggregates.zip");
 	}
 }
 File.rename(finalimages+"Erythrocytes.tiff",finalimages+"stitching/Erythrocytes.tiff");
@@ -1095,6 +1096,7 @@ function aggregate_detection(name, filepath){
 	roiManager("reset");
 	run("Analyze Particles...", "size=400-infinity pixel circularity=0.00-1.00 clear include add");
 	run("Clear Results");
+	selectWindow(name+".tiff");
 	roiManager("Measure");
 	areas=newArray(nResults);
 	excluded_aggregates=newArray(0);
@@ -1102,7 +1104,8 @@ function aggregate_detection(name, filepath){
 	for (i = 0; i < nResults; i++) {
 		area=getResult("Area", i);
 		circ=getResult("Circ.", i);
-		if (circ>0.7 && area<800) {
+		mean=getResult("Mean", i);
+		if (circ>0.7 && area<800 && mean>5000) {
 			excluded_aggregates=Array.concat(excluded_aggregates,i);
 		}
 	}
@@ -1166,7 +1169,8 @@ function remove_aggregates(name, filepath){
 	save(filepath);
 	selectWindow(name+"_deleted.tiff");
 	roiManager("deselect");
-	save(substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+4))+name+"_removed_aggregates.tiff");
+	save(substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+5))+name+"_removed_aggregates.tiff");
+	roiManager("save", substring(filepath, 0, lengthOf(filepath)-(lengthOf(name)+5))+name+"_removed_aggregates.zip");
 	roiManager("reset");
 	run("Clear Results");
 	run("Close All");
