@@ -67,43 +67,56 @@ if (clean==true) {
 
 //Dialog for selection of markers to be analyzed
 Dialog.create("Select markers for analysis");
-n=2*markernumber;
+n=3*markernumber;
 chbxlables = newArray(n);
 defaults = newArray(n);
-for (i = 0; i < markernumber*2; i=i+2) {
-	chbxlables[i]="Process "+folders[i/2];
+for (i = 0; i < markernumber*3; i=i+3) {
+	chbxlables[i]="Process "+folders[i/3];
 	chbxlables[i+1]="Intranuclear";
+	chbxlables[i+2]="Architecture";
 	defaults[i] = true;
-	if(folders[i/2]=='DNA'||folders[i/2]=='Nuclei'||folders[i/2]=='FoxP3'||folders[i/2]=='GATA3'||folders[i/2]=='GATA-3'||folders[i/2]=='Ki67'){
+	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='FoxP3'||folders[i/3]=='GATA3'||folders[i/3]=='GATA-3'||folders[i/3]=='Ki67'){
 		defaults[i+1] = true;
 	}else {
 		defaults[i+1] = false;
 	}
+	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='Cytokeratin'||folders[i/3]=='PAN'||folders[i/3]=='Vimentin'||folders[i/3]=='SMA'){
+		defaults[i+2] = true;
+	}else {
+		defaults[i+2] = false;
+	}
+
 }
 Dialog.addCheckboxGroup(markernumber, 3, chbxlables, defaults);
 Dialog.addHelp("<html><b>Marker checkboxes</b> (left side)<br>Here the markers which should be included in the quantification should be selected. "+
 "Please make sure at this point, that all markers have been aquired with a good quality and the backrund subtraction worked properly for all markers.<br><br>"+
-"<b>Marker type</b> (right side)<br>If the marker is located intranuclear, the checkbox needs to be selected. This selection will change the processing of images before quantification and will decide "+
-"if spacial spillover correction is performed on the marker.<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
+"<b>Intranuclear</b> (middle)<br>If the marker is located intranuclear, the checkbox needs to be selected. This selection will change the processing of images before quantification and will decide "+
+"if spacial spillover correction is performed on the marker.<br><br><b>Architecture</b> (right side)<br>If the epitope marks greater tissue parts like the epithelial compartement or muscular cells and is less ment to be used to characterize single cell" +
+" phenotypes, this checkbox should be selected. "+
+"<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
 //Get values from the dialog
 marker=newArray(markernumber);
 intranuclear_0=newArray(markernumber);
+architecture_0=newArray(markernumber);
 markernumber_total=0;
 for (i = 0; i < markernumber; i++) {
 	marker[i]=Dialog.getCheckbox();
 	intranuclear_0[i]=Dialog.getCheckbox();
+	architecture_0[i]=Dialog.getCheckbox();
 	if (marker[i]==true) {
 		markernumber_total++;
 	}
 }
 folders_new=newArray(markernumber_total);
 intranuclear=newArray(markernumber_total);
+architecture=newArray(markernumber_total);
 j=0;
 for (i = 0; i < markernumber; i++) {
 	if (marker[i]==true) {
 		intranuclear[j]=intranuclear_0[i];
+		architecture[j]=architecture_0[i];
 		folders_new[j]=folders[i];
 		j++;
 	}
@@ -467,7 +480,7 @@ total_aggregate_count=0;
 if (detect_aggregates==true){print("Start aggregate detection...");}
 for (i = 0; i < files.length; i++) {
 	name=substring(files[i],0,lengthOf(files[i])-5);
-	if (name!=segmentationmarker && name!=cytokeratin && name!=ery_channel) {
+	if (name!=segmentationmarker && name!=cytokeratin && name!=ery_channel && architecture[i]==false) {
 		if (detect_aggregates==true){
 			filepath=finalimages+files[i];
 			number_of_aggregates = aggregate_detection(name, filepath);
