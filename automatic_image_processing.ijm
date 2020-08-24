@@ -118,6 +118,8 @@ choices=Array.concat(folders,"*None*");
 Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("BG channel", folders, occurance_in_array(folders, newArray("PerCP_BG","PerCP","BG","Erys","Erys_AF","*None*")));
 Dialog.setInsets(0, 0, 0);
+Dialog.addCheckbox(highlight_string("Aggregate removal","b"), false);
+Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Create merge image","b"), true);
 Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Segmentation","b"), true);
@@ -150,21 +152,19 @@ Dialog.addNumber(highlight_string("Rolling ball radius ","i"), 10,0,4,"pixel");
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
 Dialog.setInsets(15, 0, 0);
-Dialog.addCheckbox(highlight_string("Aggregate removal","b"), false);
-Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
 Dialog.addNumber("Threshold", 60, 0, 4, "%");
 Dialog.addNumber("Min intensity", 100, 0, 4, "");
 Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detected from a early PerCP Background channel and will be segmented for quantification as well. "+
-"Select the channel from the list of processed channels for erythrocyte detection. This channel will also be used for intensity quantifications later on.<br><br>"+
+"Select the channel from the list of processed channels for erythrocyte detection. This channel will also be used for intensity quantifications later on.<br>"+
+"<br><b>Aggregate removal</b><br><cite>Implemented, but not validated yet. This beta version can be tested if markers are prone to have a high number of dye aggregates.<br><br></cite>"+
 "<b>Create merge image</b><br>To get an overview about the tissue architechture, up to 7 channels can be merged in this step. You will be asked to select them after the stitching is finished. "+
 "By default, Vimentin, SMA, Nuclei and Cytokeratin are selected here. Channels can be weighted by a factor where 1 means a default merge of the full-intensity image.<br><br>"+
 "<b>Segmentation</b><br>here you need to choose your segmentationmarker and the marker for epithelial cells, if you have selected a tissue type "+
 "containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
 "<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
 "resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
-"choose to delete images, which are only present for some markers but not for others.<br><br><b>Aggregate removal</b><br><cite>Implemented, but not validated yet. "+
-"This beta version can be tested if markers are prone to have a high number of dye aggregates.</cite><br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
+"choose to delete images, which are only present for some markers but not for others.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
 "signal is maximal allowed to be present in only one quater of the cell. The min intensity is the min grayscale value, for which a cell is considered for spacial spillover "+
 "correction<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
@@ -172,6 +172,8 @@ Dialog.show();
 //Get values from the dialog
 erys=Dialog.getCheckbox();
 ery_channel=Dialog.getChoice();
+if (erys==false){ery_channel='NoChannelSelected';}
+detect_aggregates=Dialog.getCheckbox();
 mergeimages=Dialog.getCheckbox();
 segmentationstatus=Dialog.getCheckbox();
 segmentationmarker=Dialog.getChoice();
@@ -191,7 +193,6 @@ minimum_radius=Dialog.getNumber();
 subtract_BG=Dialog.getCheckbox();
 rolling_radius=Dialog.getNumber();
 checkconsistancy=Dialog.getCheckbox();
-detect_aggregates=Dialog.getCheckbox();
 spillovercorrection=Dialog.getCheckbox();
 totalpositions=xsize*ysize+(firsttile-1);
 distribution_threshold=Dialog.getNumber();
@@ -457,6 +458,34 @@ else {
 	}
 }
 
+//get file list for all stiched images
+finalimages=pathraw+"Results/";
+files=getFileList(finalimages);
+
+//Perform aggregate detection and removal
+total_aggregate_count=0;
+if (detect_aggregates==true){print("Start aggregate detection...");}
+for (i = 0; i < files.length; i++) {
+	name=substring(files[i],0,lengthOf(files[i])-5);
+	if (name!=segmentationmarker && name!=cytokeratin && name!=ery_channel) {
+		if (detect_aggregates==true){
+			filepath=finalimages+files[i];
+			number_of_aggregates = aggregate_detection(name, filepath);
+			print(name+": "+number_of_aggregates+" aggregates have been detected");
+			total_aggregate_count=total_aggregate_count+number_of_aggregates;
+		}
+	}
+}
+File.makeDirectory(finalimages+"stitching");
+for (i = 0; i < markernumber_total; i++) {
+	if (detect_aggregates==true) {
+		File.makeDirectory(pathraw+"/Results/stitching/Aggregate_removal");
+		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"_removed_aggregates.tiff");
+		File.rename(finalimages+folders[i]+"_removed_aggregates.zip", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"_removed_aggregates.zip");
+	}
+}
+
+
 //Create merge image
 if (mergeimages == true){
 	colors=newArray("Red","Green","Blue","Gray","Cyan","Magenta","Yellow");
@@ -500,9 +529,7 @@ if (mergeimages == true){
 
 //Continue with segmentation
 roiManager("reset");
-finalimages=pathraw+"Results/";
 File.makeDirectory(finalimages+"segmentation");
-File.makeDirectory(finalimages+"stitching");
 
 if (segmentationstatus == true) {
 
@@ -619,22 +646,6 @@ if (segmentationstatus == true) {
 		files=getFileList(finalimages);
 		files=Array.delete(files, "stitching/");
 		files=Array.delete(files, "segmentation/");
-
-		
-		//Perform aggregate detection and removal
-		total_aggregate_count=0;
-		if (detect_aggregates==true){print("Start aggregate detection...");}
-		for (i = 0; i < files.length; i++) {
-			name=substring(files[i],0,lengthOf(files[i])-5);
-			if (name!=segmentationmarker && name!=cytokeratin) {
-				if (detect_aggregates==true){
-					filepath=finalimages+files[i];
-					number_of_aggregates = aggregate_detection(name, filepath);
-					print(name+": "+number_of_aggregates+" aggregates have been detected");
-					total_aggregate_count=total_aggregate_count+number_of_aggregates;
-				}
-			}
-		}
 		
 		startT = getTime;
 		roiManager("reset");
@@ -773,6 +784,7 @@ if (segmentationstatus == true) {
 			}
 
 			//Finally get the Mean intensity for all cells and all markers
+			print("\\Update: Calculating values for marker "+i+"/"+slices+" ("+slicename+")...");
 			if (slicename != "Erythrocytes"){
 				roiManager("Select All");
 				roiManager("Measure");
@@ -795,11 +807,6 @@ if (segmentationstatus == true) {
 run("Close All");
 for (i = 0; i < markernumber_total; i++) {
 	File.rename(finalimages+folders[i]+".tiff",finalimages+"stitching/"+folders[i]+".tiff");
-	if (detect_aggregates==true) {
-		File.makeDirectory(pathraw+"/Results/stitching/Aggregate_removal");
-		File.rename(finalimages+folders[i]+"_removed_aggregates.tiff", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"_removed_aggregates.tiff");
-		File.rename(finalimages+folders[i]+"_removed_aggregates.zip", pathraw+"/Results/stitching/Aggregate_removal/"+folders[i]+"_removed_aggregates.zip");
-	}
 }
 File.rename(finalimages+"Erythrocytes.tiff",finalimages+"stitching/Erythrocytes.tiff");
 File.rename(pathraw+"merge.tiff",finalimages+"stitching/merge.tiff");
@@ -1090,11 +1097,11 @@ function aggregate_detection(name, filepath){
 	run("Duplicate...", "title="+name+"aggregate_mask.tiff");
 	run("Unsharp Mask...", "radius=100 mask=0.5");
 	run("Gaussian Blur...", "sigma=4");
-	setAutoThreshold("Intermodes dark");
+	setThreshold(50000, 65535);
 	run("Convert to Mask");
 	run("Watershed");
 	roiManager("reset");
-	run("Analyze Particles...", "size=400-infinity pixel circularity=0.00-1.00 clear include add");
+	run("Analyze Particles...", "size=200-infinity pixel circularity=0.00-1.00 clear include add");
 	run("Clear Results");
 	selectWindow(name+".tiff");
 	roiManager("Measure");
@@ -1105,7 +1112,7 @@ function aggregate_detection(name, filepath){
 		area=getResult("Area", i);
 		circ=getResult("Circ.", i);
 		mean=getResult("Mean", i);
-		if (circ>0.7 && area<800 && mean>5000) {
+		if (circ>0.7 && area<200 && mean>5000) {
 			excluded_aggregates=Array.concat(excluded_aggregates,i);
 		}
 	}
@@ -1143,7 +1150,7 @@ function remove_aggregates(name, filepath){
 	counts=roiManager("count");
 	for(i=0; i<counts; i++) {
 	    roiManager("Select", i);
-	    run("Enlarge...", "enlarge=8 pixel");
+	    run("Enlarge...", "enlarge=9 pixel");
 	    roiManager("Update");
 	}
 	selectWindow(name+".tiff");
