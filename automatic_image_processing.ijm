@@ -73,50 +73,49 @@ defaults = newArray(n);
 for (i = 0; i < markernumber*3; i=i+3) {
 	chbxlables[i]="Process "+folders[i/3];
 	chbxlables[i+1]="Intranuclear";
-	chbxlables[i+2]="Architecture";
+	chbxlables[i+2]="FISH";
 	defaults[i] = true;
 	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='FoxP3'||folders[i/3]=='GATA3'||folders[i/3]=='GATA-3'||folders[i/3]=='Ki67'){
 		defaults[i+1] = true;
 	}else {
 		defaults[i+1] = false;
 	}
-	if(folders[i/3]=='DNA'||folders[i/3]=='Nuclei'||folders[i/3]=='Cytokeratin'||folders[i/3]=='PAN'||folders[i/3]=='Vimentin'||folders[i/3]=='SMA'){
+	if(matches(folders[i/3], "mRNA")){
 		defaults[i+2] = true;
 	}else {
 		defaults[i+2] = false;
 	}
-
 }
 Dialog.addCheckboxGroup(markernumber, 3, chbxlables, defaults);
 Dialog.addHelp("<html><b>Marker checkboxes</b> (left side)<br>Here the markers which should be included in the quantification should be selected. "+
 "Please make sure at this point, that all markers have been aquired with a good quality and the backrund subtraction worked properly for all markers.<br><br>"+
 "<b>Intranuclear</b> (middle)<br>If the marker is located intranuclear, the checkbox needs to be selected. This selection will change the processing of images before quantification and will decide "+
-"if spacial spillover correction is performed on the marker.<br><br><b>Architecture</b> (right side)<br>If the epitope marks greater tissue parts like the epithelial compartement or muscular cells and is less ment to be used to characterize single cell" +
-" phenotypes, this checkbox should be selected. "+
+"if spacial spillover correction is performed on the marker.<br><br><b>FISH</b> (right side)<br>If the channel is derived from RNA in-situ hybridisation, selcet this checkbox. " +
+"It will result in an alternative quantification algorithm. "+
 "<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
 //Get values from the dialog
 marker=newArray(markernumber);
 intranuclear_0=newArray(markernumber);
-architecture_0=newArray(markernumber);
+fish_0=newArray(markernumber);
 markernumber_total=0;
 for (i = 0; i < markernumber; i++) {
 	marker[i]=Dialog.getCheckbox();
 	intranuclear_0[i]=Dialog.getCheckbox();
-	architecture_0[i]=Dialog.getCheckbox();
+	fish_0[i]=Dialog.getCheckbox();
 	if (marker[i]==true) {
 		markernumber_total++;
 	}
 }
 folders_new=newArray(markernumber_total);
 intranuclear=newArray(markernumber_total);
-architecture=newArray(markernumber_total);
+fish=newArray(markernumber_total);
 j=0;
 for (i = 0; i < markernumber; i++) {
 	if (marker[i]==true) {
 		intranuclear[j]=intranuclear_0[i];
-		architecture[j]=architecture_0[i];
+		fish[j]=fish_0[i];
 		folders_new[j]=folders[i];
 		j++;
 	}
@@ -480,7 +479,7 @@ total_aggregate_count=0;
 if (detect_aggregates==true){print("Start aggregate detection...");}
 for (i = 0; i < files.length; i++) {
 	name=substring(files[i],0,lengthOf(files[i])-5);
-	if (name!=segmentationmarker && name!=cytokeratin && name!=ery_channel && architecture[i]==false) {
+	if (name!=segmentationmarker && name!=cytokeratin && name!=ery_channel) {
 		if (detect_aggregates==true){
 			filepath=finalimages+files[i];
 			number_of_aggregates = aggregate_detection(name, filepath);
@@ -503,6 +502,7 @@ for (i = 0; i < markernumber_total; i++) {
 if (mergeimages == true){
 	colors=newArray("Red","Green","Blue","Gray","Cyan","Magenta","Yellow");
 	items=getFileList(pathraw+"Results/");
+	items=Array.deleteValue(items, "stitching/");
 	for (i = 0; i < items.length; i++) {
 		items[i]=substring(items[i], 0, lengthOf(items[i])-5);
 	}
@@ -693,114 +693,151 @@ if (segmentationstatus == true) {
 		//Cycle through all channels for the following block of commands
 		for (i=1;i<=slices;i++) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
-			
 			print("Starting value calculation for "+slicename);
-			//Correct the surfacemarkers to get them less blurry
-			if(outlier_correction==true){
-				print("\\Update: Performing outlier correction...");
-				run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
-			}
-			if(minimum_correction==true && intranuclear[i-1]!=true){
-				print("\\Update: Performing minimum correction...");
-				run("Minimum...", "radius="+minimum_radius);
-			}
-			if(subtract_BG==true){
-				print("\\Update: Subtracting BG for marker "+i+"/"+slices+" ("+slicename+")...");
-				run("Subtract Background...", "rolling="+rolling_radius);
-			}
-
-			//Perform spillovercorrection for all cells
-			if (spillovercorrection==true && intranuclear[i-1]!=true && slicename!=ery_channel){
-				File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
-				setBatchMode(true);
-				total_rois=roiManager("count");
-				error_cells=newArray();
-				for (k = 0; k < total_rois; k++) {	
-					total_cells=roiManager("count");
-					cell=k;
-					roiManager("select", cell);
-					if(selectionType() != -1) {
-						List.setMeasurements;
-						if (parseFloat(List.get("Mean")) > minCorrInt){
-							percentages=newArray(0);
-							spilloverresults=newArray(5);
-							
-							//Subsegmentation into 4 Sub-ROIs bei overlaying rectangles and merging them with
-							//the inital ROI to get one sub-ROI l = x-axis, m = y-axis
-							z=0;
-							roiManager("select",cell);
-							getSelectionBounds(x, y, width, height);
-							error_roi=false;
-							for (m=0; m<2; m++) {
-								for (l=0; l<2; l++) {
-									makeRectangle (x+(l*width / 2), y+(m*height/2), width/2, height/2);
-									roiManager("Add");
-									roiManager("select", newArray(cell, total_cells+z));
-									roiManager("and");
-									if (selectionType()!=-1) {
-										roiManager("Add");
-										roiManager("deselect");
-										roiManager("select", total_cells+z);
-										roiManager("delete");
-									} else {
-										error_roi=true;
-										error_cells=Array.concat(error_cells,k);
-									}
-									z=z+1;
-								} 
-							}
-
-							//Get the mean intensity for the whole cell and the sub-ROIs
-							roiManager("select", cell);
+			if (fish[i-1]!=true) {
+				//Correct the surfacemarkers to get them less blurry
+				if(outlier_correction==true){
+					print("\\Update: Performing outlier correction...");
+					run("Remove Outliers...", "radius="+outlier_radius+" threshold="+outlier_threshold+" which=Bright");
+				}
+				if(minimum_correction==true && intranuclear[i-1]!=true){
+					print("\\Update: Performing minimum correction...");
+					run("Minimum...", "radius="+minimum_radius);
+				}
+				if(subtract_BG==true){
+					print("\\Update: Subtracting BG for marker "+i+"/"+slices+" ("+slicename+")...");
+					run("Subtract Background...", "rolling="+rolling_radius);
+				}
+	
+				//Perform spillovercorrection for all cells
+				if (spillovercorrection==true && intranuclear[i-1]!=true && slicename!=ery_channel){
+					File.makeDirectory(finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded");
+					setBatchMode(true);
+					total_rois=roiManager("count");
+					error_cells=newArray();
+					for (k = 0; k < total_rois; k++) {	
+						total_cells=roiManager("count");
+						cell=k;
+						roiManager("select", cell);
+						if(selectionType() != -1) {
 							List.setMeasurements;
-							spilloverresults[0]=List.getValue("Mean");
-							for (l = 1; l < 5; l++) {
-								roiManager("select", total_cells+(l-1));
-								List.setMeasurements;
-								spilloverresults[l]=List.getValue("Mean");
-							}
-
-							//delete the sub-ROIs to come back to the initial number of ROIs, only containing the cells
-							roiManager("select", newArray(total_cells,total_cells+1,total_cells+2,total_cells+3));
-							roiManager("delete");
-
-
-							//Calculate the percentages of Signal for each sub-ROI by deviding the mean of the su
-							if(parseFloat(spilloverresults[0])!=0 && error_roi!=true){
-								for (l = 1; l < 5; l++) {
-									nextvalue=parseFloat(spilloverresults[l])/parseFloat(spilloverresults[0]);
-									percentages=Array.concat(percentages,nextvalue);
+							if (parseFloat(List.get("Mean")) > minCorrInt){
+								percentages=newArray(0);
+								spilloverresults=newArray(5);
+								
+								//Subsegmentation into 4 Sub-ROIs bei overlaying rectangles and merging them with
+								//the inital ROI to get one sub-ROI l = x-axis, m = y-axis
+								z=0;
+								roiManager("select",cell);
+								getSelectionBounds(x, y, width, height);
+								error_roi=false;
+								for (m=0; m<2; m++) {
+									for (l=0; l<2; l++) {
+										makeRectangle (x+(l*width / 2), y+(m*height/2), width/2, height/2);
+										roiManager("Add");
+										roiManager("select", newArray(cell, total_cells+z));
+										roiManager("and");
+										if (selectionType()!=-1) {
+											roiManager("Add");
+											roiManager("deselect");
+											roiManager("select", total_cells+z);
+											roiManager("delete");
+										} else {
+											error_roi=true;
+											error_cells=Array.concat(error_cells,k);
+										}
+										z=z+1;
+									} 
 								}
-								Array.getStatistics(percentages, min, max, mean, stdDev);
-
-								//if the percentage of signal coming from one sub-ROI gets higher than the threshold,
-								//The original ROI is saved (as Image and ROI) and the signal is deleted for this marker
-								for (l = 0; l < 4; l++) {
-									if(parseFloat(percentages[l])>distribution_threshold){
-										roiManager("select",cell);
-										run("Copy");
-										run("Internal Clipboard");
-										selectWindow("Clipboard");
-										saveAs("Tiff", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.tiff");
-										close();
-										setBackgroundColor(0, 0, 0);
-										run("Clear", "slice");
-										roiManager("Save", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.roi");
+	
+								//Get the mean intensity for the whole cell and the sub-ROIs
+								roiManager("select", cell);
+								List.setMeasurements;
+								spilloverresults[0]=List.getValue("Mean");
+								for (l = 1; l < 5; l++) {
+									roiManager("select", total_cells+(l-1));
+									List.setMeasurements;
+									spilloverresults[l]=List.getValue("Mean");
+								}
+	
+								//delete the sub-ROIs to come back to the initial number of ROIs, only containing the cells
+								roiManager("select", newArray(total_cells,total_cells+1,total_cells+2,total_cells+3));
+								roiManager("delete");
+	
+	
+								//Calculate the percentages of Signal for each sub-ROI by deviding the mean of the su
+								if(parseFloat(spilloverresults[0])!=0 && error_roi!=true){
+									for (l = 1; l < 5; l++) {
+										nextvalue=parseFloat(spilloverresults[l])/parseFloat(spilloverresults[0]);
+										percentages=Array.concat(percentages,nextvalue);
+									}
+									Array.getStatistics(percentages, min, max, mean, stdDev);
+	
+									//if the percentage of signal coming from one sub-ROI gets higher than the threshold,
+									//The original ROI is saved (as Image and ROI) and the signal is deleted for this marker
+									for (l = 0; l < 4; l++) {
+										if(parseFloat(percentages[l])>distribution_threshold){
+											roiManager("select",cell);
+											run("Copy");
+											run("Internal Clipboard");
+											selectWindow("Clipboard");
+											saveAs("Tiff", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.tiff");
+											close();
+											setBackgroundColor(0, 0, 0);
+											run("Clear", "slice");
+											roiManager("Save", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.roi");
+										}
 									}
 								}
 							}
 						}
+						progress=((k+1)/(total_cells)*100);
+						print("\\Update: Spillover correction for marker "+i+"/"+slices+" ("+slicename+"): "+progress+" %");
 					}
-					progress=((k+1)/(total_cells)*100);
-					print("\\Update: Spillover correction for marker "+i+"/"+slices+" ("+slicename+"): "+progress+" %");
 				}
+			}else {
+				print("\\Update: Subtracting BG for FISH-marker "+i+"/"+slices+" ("+slicename+")...");
+				run("Subtract Background...", "rolling=5");
 			}
+
 
 			//Finally get the Mean intensity for all cells and all markers
 			print("\\Update: Calculating values for marker "+i+"/"+slices+" ("+slicename+")...");
 			if (slicename != "Erythrocytes"){
-				roiManager("Select All");
-				roiManager("Measure");
+				if (fish[i-1]!=true) {
+					roiManager("Select All");
+					roiManager("Measure");
+				}else{
+					total_cells=roiManager("count");
+					resultsarray=newArray(total_cells);
+					print("\\Update: Subtracting BG for marker "+i+"/"+slices+" ("+slicename+")...");
+					run("Subtract Background...", "rolling=5");
+					for (j = 0; j < total_cells; j++) {
+						roiManager("select", j);
+						run("Duplicate...","ROI");
+						run("Make Inverse");
+						run("Clear", "slice");
+						run("Select None");
+						mean=getValue("Mean");
+						run("Convert to Mask");
+						run("Ultimate Points");
+						setThreshold(1, 255);
+						run("Convert to Mask");
+						run("Analyze Particles...", "size=0-1 summarize include");
+						resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean/10;
+						Table.reset("Summary");
+						close();
+						progress=((j+1)/total_cells)*100;
+					    print("\\Update: Segmenting mRNA for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
+					}
+					for (j = 0; j < total_cells; j++) {
+						setResult("Mean", nResults, resultsarray[j]);
+						setResult("Label", nResults-1, slicename+':'+j);
+						updateResults();
+						progress=((j+1)/total_cells)*100;
+						print("\\Update: Calculating values for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
+					}
+				}
 			}
 			run("Next Slice [>]");
 		}
@@ -809,9 +846,11 @@ if (segmentationstatus == true) {
 		File.makeDirectory(finalimages+"stitching/spacialcorrected/");
 		pathspatialcorrected=finalimages+"stitching/spacialcorrected/";
 		run("Image Sequence... ", "format=TIFF use save=pathspatialcorrected");
-				
+		selectWindow("Results");
 		saveAs("Results", finalimages+"segmentation/FL_values.csv");
 		run("Close");
+		close("Results");
+		close("Summary");
 		Tcalculation = Tcalculation+((getTime-startT)/1000);
 	}
 }
