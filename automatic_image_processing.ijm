@@ -827,7 +827,6 @@ if (segmentationstatus == true) {
 						run("Analyze Particles...", "size=0-1 summarize include");
 						resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
 						Table.reset("Summary");
-						drawString(resultsarray[j], 0, 0);
 						saveAs('tiff', finalimages+"segmentation/FISH/"+slicename+"_cell_"+j+"processed.tiff");
 						close();
 						progress=((j+1)/total_cells)*100;
