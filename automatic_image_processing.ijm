@@ -834,7 +834,7 @@ if (segmentationstatus == true) {
 					}
 					for (j = 0; j < total_cells; j++) {
 						setResult("Mean", nResults, resultsarray[j]);
-						setResult("Label", nResults-1, slicename+':'+j);
+						setResult("Label", nResults-1, slicename+':'+j+1);
 						updateResults();
 						progress=((j+1)/total_cells)*100;
 						print("\\Update: Calculating values for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
