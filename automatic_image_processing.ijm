@@ -814,7 +814,6 @@ if (segmentationstatus == true) {
 					for (j = 0; j < total_cells; j++) {
 						roiManager("select", j);
 						run("Duplicate...","ROI");
-						saveAs('tiff', finalimages+"segmentation/FISH/"+slicename+"_cell_"+j+".tiff");
 						run("Make Inverse");
 						run("Clear", "slice");
 						run("Select None");
@@ -827,7 +826,6 @@ if (segmentationstatus == true) {
 						run("Analyze Particles...", "size=0-1 summarize include");
 						resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
 						Table.reset("Summary");
-						saveAs('tiff', finalimages+"segmentation/FISH/"+slicename+"_cell_"+j+"processed.tiff");
 						close();
 						progress=((j+1)/total_cells)*100;
 					    print("\\Update: Segmenting mRNA for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
