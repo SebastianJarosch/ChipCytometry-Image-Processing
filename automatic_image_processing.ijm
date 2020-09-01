@@ -808,24 +808,27 @@ if (segmentationstatus == true) {
 					roiManager("Select All");
 					roiManager("Measure");
 				}else{
+					File.makeDirectory(finalimages+"segmentation/FISH/");
 					total_cells=roiManager("count");
 					resultsarray=newArray(total_cells);
-					print("\\Update: Subtracting BG for marker "+i+"/"+slices+" ("+slicename+")...");
-					run("Subtract Background...", "rolling=5");
 					for (j = 0; j < total_cells; j++) {
 						roiManager("select", j);
 						run("Duplicate...","ROI");
+						saveAs('tiff', finalimages+"segmentation/FISH/"+slicename+"_cell_"+j+".tiff");
 						run("Make Inverse");
 						run("Clear", "slice");
 						run("Select None");
 						mean=getValue("Mean");
+						setThreshold(10000, 65535);
 						run("Convert to Mask");
 						run("Ultimate Points");
 						setThreshold(1, 255);
 						run("Convert to Mask");
 						run("Analyze Particles...", "size=0-1 summarize include");
-						resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean/10;
+						resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
 						Table.reset("Summary");
+						drawString(resultsarray[j], 0, 0);
+						saveAs('tiff', finalimages+"segmentation/FISH/"+slicename+"_cell_"+j+"processed.tiff");
 						close();
 						progress=((j+1)/total_cells)*100;
 					    print("\\Update: Segmenting mRNA for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
