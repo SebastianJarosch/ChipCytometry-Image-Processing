@@ -470,7 +470,8 @@ else {
 	}
 }
 
-//get file list for all stiched images
+
+//get file list for all stiched images
 finalimages=pathraw+"Results/";
 files=getFileList(finalimages);
 
@@ -694,7 +695,8 @@ if (segmentationstatus == true) {
 		for (i=1;i<=slices;i++) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			print("Starting value calculation for "+slicename);
-			if (fish[i-1]!=true) {
+			
+if (fish[i-1]!=true) {
 				//Correct the surfacemarkers to get them less blurry
 				if(outlier_correction==true){
 					print("\\Update: Performing outlier correction...");
@@ -825,6 +827,7 @@ if (segmentationstatus == true) {
 						run("Convert to Mask");
 						run("Analyze Particles...", "size=0-1 summarize include");
 						resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
+						if (resultsarray[j]<0) {resultsarray[j]=0;}
 						Table.reset("Summary");
 						close();
 						progress=((j+1)/total_cells)*100;
