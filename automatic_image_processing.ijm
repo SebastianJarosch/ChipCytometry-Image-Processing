@@ -813,14 +813,22 @@ if (fish[i-1]!=true) {
 					File.makeDirectory(finalimages+"segmentation/FISH/");
 					total_cells=roiManager("count");
 					resultsarray=newArray(total_cells);
+					Xarray=newArray(total_cells);
+					Yarray=newArray(total_cells);
+					areaarray=newArray(total_cells);
+					circarray=newArray(total_cells);
 					for (j = 0; j < total_cells; j++) {
 						roiManager("select", j);
+						Xarray[j]=getValue("X");
+						Yarray[j]=getValue("Y");
+						areaarray[j]=getValue("Area");
+						circarray[j]=getValue("Circ.");
 						run("Duplicate...","ROI");
 						run("Make Inverse");
 						run("Clear", "slice");
 						run("Select None");
 						mean=getValue("Mean");
-						setThreshold(10000, 65535);
+						setThreshold(10000, 45000);
 						run("Convert to Mask");
 						run("Ultimate Points");
 						setThreshold(1, 255);
@@ -836,6 +844,10 @@ if (fish[i-1]!=true) {
 					for (j = 0; j < total_cells; j++) {
 						setResult("Mean", nResults, resultsarray[j]);
 						setResult("Label", nResults-1, slicename+':'+j+1);
+						setResult("Area", nResults-1, areaarray[j]);
+						setResult("Circ.", nResults-1, circarray[j]);
+						setResult("X", nResults-1, Xarray[j]);
+						setResult("Y", nResults-1, Yarray[j]);
 						updateResults();
 						progress=((j+1)/total_cells)*100;
 						print("\\Update: Calculating values for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
@@ -844,6 +856,7 @@ if (fish[i-1]!=true) {
 			}
 			run("Next Slice [>]");
 		}
+		if (fish[0]==true) {IJ.deleteRows(0, total_cells);}
 
 		//Save the stitched images with the deleted signals for each marker
 		File.makeDirectory(finalimages+"stitching/spacialcorrected/");
