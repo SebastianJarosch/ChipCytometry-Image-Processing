@@ -696,7 +696,7 @@ if (segmentationstatus == true) {
 			slicename=substring(getInfo("slice.label"),0,lengthOf(getInfo("slice.label"))-5);
 			print("Starting value calculation for "+slicename);
 			
-if (fish[i-1]!=true) {
+			if (fish[i-1]!=true) {
 				//Correct the surfacemarkers to get them less blurry
 				if(outlier_correction==true){
 					print("\\Update: Performing outlier correction...");
