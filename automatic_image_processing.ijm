@@ -815,19 +815,22 @@ if (fish[i-1]!=true) {
 					for (j = 0; j < total_cells; j++) {
 						roiManager("select", j);
 						run("Duplicate...","ROI");
-						run("Make Inverse");
-						run("Clear", "slice");
-						run("Select None");
-						mean=getValue("Mean");
-						setThreshold(10000, 50000);
-						run("Convert to Mask");
-						run("Ultimate Points");
-						setThreshold(1, 255);
-						run("Convert to Mask");
-						run("Analyze Particles...", "size=0-1 summarize include");
-						resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
-						if (resultsarray[j]<0) {resultsarray[j]=0;}
-						Table.reset("Summary");
+						kurt=getValue("Kurt");
+						if (kurt > 0) {
+							run("Make Inverse");
+							run("Clear", "slice");
+							run("Select None");
+							mean=getValue("Mean");
+							setThreshold(10000, 60000);
+							run("Convert to Mask");
+							run("Ultimate Points");
+							setThreshold(1, 255);
+							run("Convert to Mask");
+							run("Analyze Particles...", "size=0-1 summarize include");
+							resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
+							if (resultsarray[j]<0) {resultsarray[j]=0;}
+							Table.reset("Summary");
+						}else {resultsarray[j]=0;}
 						close();
 						progress=((j+1)/total_cells)*100;
 					    print("\\Update: Segmenting mRNA for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
