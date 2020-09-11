@@ -26,7 +26,7 @@ print("Number of markers found: "+markernumber);
 Dialog.create("Tissue properties");
 Dialog.addString('ChipID', ChipID)
 organisms=newArray("human","mouse");
-tissues=newArray("colon","spleen/LN","stomach","pancreas","breast");
+tissues=newArray("cells","colon","spleen/LN","stomach","pancreas","breast");
 Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Organism", organisms, "human");
 Dialog.addChoice("Tissue", tissues, "colon");
@@ -148,7 +148,7 @@ if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
 	sepepithel=true;
 }
 ensize=3;
-if (tissue=="spleen/LN") {
+if (tissue=="spleen/LN"||tissue=="cells") {
 	ensize=2;
 }
 Dialog.addNumber("Enlarge ROIs by", ensize,0,4, "pixel");
@@ -552,26 +552,28 @@ if (segmentationstatus == true) {
 	open(finalimages+segmentationmarker+".tiff");
 
 	//Measure tissue size
-	print("Measuring the size of the tissue section...");
-	run("Duplicate...", "title=tissue_size.tiff");
-	run("Gaussian Blur...", "sigma=20");
-	setAutoThreshold("Mean dark");
-	run("Convert to Mask");
-	roiManager("reset");
-	run("Analyze Particles...", "size=10000-infinity pixel clear include add");
-	run("Clear Results");
-	roiManager("Measure");
-	area=0;
-	for (i = 0; i < nResults; i++) {
-		area=area+getResult("Area", i);
+	if (tissue!="cells") {
+		print("Measuring the size of the tissue section...");
+		run("Duplicate...", "title=tissue_size.tiff");
+		run("Gaussian Blur...", "sigma=20");
+		setAutoThreshold("Mean dark");
+		run("Convert to Mask");
+		roiManager("reset");
+		run("Analyze Particles...", "size=10000-infinity pixel clear include add");
+		run("Clear Results");
+		roiManager("Measure");
+		area=0;
+		for (i = 0; i < nResults; i++) {
+			area=area+getResult("Area", i);
+		}
+		File.makeDirectory(finalimages+"segmentation/"+"tissue_size");
+		selectWindow("tissue_size.tiff");
+		saveAs("tiff", finalimages+"segmentation/tissue_size/tissue_size_mask.tiff");
+		roiManager("save", finalimages+"segmentation/tissue_size/area_ROIs.zip");
+		roiManager("reset");
+		close("Results");
+		close("*");
 	}
-	File.makeDirectory(finalimages+"segmentation/"+"tissue_size");
-	selectWindow("tissue_size.tiff");
-	saveAs("tiff", finalimages+"segmentation/tissue_size/tissue_size_mask.tiff");
-	roiManager("save", finalimages+"segmentation/tissue_size/area_ROIs.zip");
-	roiManager("reset");
-	close("Results");
-	close("*");
 
 	print("starting segmentation");
 
@@ -638,9 +640,14 @@ if (segmentationstatus == true) {
 	}else {
 	// Generate Mask/ROI
 	run("Duplicate...", "title=all.tiff");
+	if (tissue=="cells") {run("Subtract Background...", "rolling=10");}
 	saveAs("tiff", finalimages+"segmentation/all.tiff");
 	run("Close All");
-	cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);
+	if (tissue=="cells") {
+			cellnumber=segmentation(ensize,true,"all",3000,65535,50,2000,0.75);
+	}else {
+			cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);
+	}
 	epithelialcellnumber=0;
 	LPcellnumber=0;
 	}
@@ -887,7 +894,7 @@ print("Summary of automatic image processing");
 print("************************************************************************************");
 print("-----------------------general project information---------------------------");
 print("Tissue type on Chip "+ChipID+": "+organism+" "+tissue);
-if (segmentationstatus == true){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
+if (segmentationstatus == true && tissue != "cells"){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
 if (inconsistant == true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
