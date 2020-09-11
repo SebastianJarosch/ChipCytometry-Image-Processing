@@ -150,6 +150,7 @@ if (tissue=="colon"||tissue=="pancreas"||tissue=="breast"||tissue=="stomach") {
 ensize=3;
 if (tissue=="spleen/LN"||tissue=="cells") {
 	ensize=2;
+	cytokeratin="No staining";
 }
 Dialog.addNumber("Enlarge ROIs by", ensize,0,4, "pixel");
 Dialog.setInsets(15, 0, 0);
