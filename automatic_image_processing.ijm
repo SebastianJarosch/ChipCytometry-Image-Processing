@@ -1169,7 +1169,7 @@ function aggregate_detection(name, filepath){
 	run("Duplicate...", "title="+name+"aggregate_mask.tiff");
 	run("Unsharp Mask...", "radius=100 mask=0.5");
 	run("Gaussian Blur...", "sigma=4");
-	setThreshold(50000, 65535);
+	setThreshold(20000, 65535);
 	run("Convert to Mask");
 	run("Watershed");
 	roiManager("reset");
