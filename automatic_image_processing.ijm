@@ -164,10 +164,12 @@ Dialog.addCheckbox(highlight_string("Subtract background","u"), true);
 Dialog.addNumber(highlight_string("Rolling ball radius ","i"), 10,0,4,"pixel");
 Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
-Dialog.setInsets(15, 0, 0);
-Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
-Dialog.addNumber("Threshold", 60, 0, 4, "%");
-Dialog.addNumber("Min intensity", 100, 0, 4, "");
+if (tissue!="cells"){
+	Dialog.setInsets(15, 0, 0);
+	Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
+	Dialog.addNumber("Threshold", 60, 0, 4, "%");
+	Dialog.addNumber("Min intensity", 100, 0, 4, "");
+}
 Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detected from a early PerCP Background channel and will be segmented for quantification as well. "+
 "Select the channel from the list of processed channels for erythrocyte detection. This channel will also be used for intensity quantifications later on.<br>"+
 "<br><b>Aggregate removal</b><br><cite>Implemented, but not validated yet. This beta version can be tested if markers are prone to have a high number of dye aggregates.<br><br></cite>"+
@@ -179,7 +181,7 @@ Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detec
 "resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
 "choose to delete images, which are only present for some markers but not for others.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of "+
 "signal is maximal allowed to be present in only one quater of the cell. The min intensity is the min grayscale value, for which a cell is considered for spacial spillover "+
-"correction<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
+"correction.<br><i>This option will not appear if 'cells' were selected as tissue type</i><br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
 //Get values from the dialog
@@ -206,11 +208,17 @@ minimum_radius=Dialog.getNumber();
 subtract_BG=Dialog.getCheckbox();
 rolling_radius=Dialog.getNumber();
 checkconsistancy=Dialog.getCheckbox();
-spillovercorrection=Dialog.getCheckbox();
+
+if (tissue!="cells"){
+	spillovercorrection=Dialog.getCheckbox();
+	distribution_threshold=Dialog.getNumber();
+	minCorrInt=Dialog.getNumber();
+	distribution_threshold=distribution_threshold/25;
+}else {
+	spillovercorrection=false;
+}
+
 totalpositions=xsize*ysize+(firsttile-1);
-distribution_threshold=Dialog.getNumber();
-minCorrInt=Dialog.getNumber();
-distribution_threshold=distribution_threshold/25;
 error_cells=newArray();
 
 
