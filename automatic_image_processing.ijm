@@ -177,7 +177,7 @@ Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detec
 "containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
 "<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
 "resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
-"choose to delete images, which are only present for some markers but not for others.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of"+
+"choose to delete images, which are only present for some markers but not for others.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of "+
 "signal is maximal allowed to be present in only one quater of the cell. The min intensity is the min grayscale value, for which a cell is considered for spacial spillover "+
 "correction<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
