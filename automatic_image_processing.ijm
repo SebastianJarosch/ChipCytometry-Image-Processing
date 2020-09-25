@@ -489,7 +489,7 @@ total_aggregate_count=0;
 if (detect_aggregates==true){print("Start aggregate detection...");}
 for (i = 0; i < files.length; i++) {
 	name=substring(files[i],0,lengthOf(files[i])-5);
-	if (name!=segmentationmarker && name!=cytokeratin && name!=ery_channel) {
+	if (name!=segmentationmarker && name!=cytokeratin && name!=ery_channel && intranuclear[i]!=true) {
 		if (detect_aggregates==true){
 			filepath=finalimages+files[i];
 			number_of_aggregates = aggregate_detection(name, filepath);
@@ -1166,50 +1166,64 @@ function aggregate_detection(name, filepath){
 	roiManager("deselect");
 	setBatchMode(true);
 	open(filepath);
-	run("Duplicate...", "title="+name+"aggregate_mask.tiff");
-	run("Unsharp Mask...", "radius=100 mask=0.5");
-	run("Gaussian Blur...", "sigma=4");
-	setThreshold(20000, 65535);
-	run("Convert to Mask");
-	run("Watershed");
-	roiManager("reset");
-	run("Analyze Particles...", "size=200-infinity pixel circularity=0.00-1.00 clear include add");
-	run("Clear Results");
-	selectWindow(name+".tiff");
-	roiManager("Measure");
-	areas=newArray(nResults);
-	excluded_aggregates=newArray(0);
-	n_aggregates=0;
-	for (i = 0; i < nResults; i++) {
-		area=getResult("Area", i);
-		circ=getResult("Circ.", i);
-		mean=getResult("Mean", i);
-		if (circ>0.7 && area<200 && mean>5000) {
-			excluded_aggregates=Array.concat(excluded_aggregates,i);
+	run("Measure");
+	if (getResult("Mean", 0) < 1500){
+		run("Clear Results");
+		run("Duplicate...", "title="+name+"aggregate_mask.tiff");
+		run("Unsharp Mask...", "radius=100 mask=0.5");
+		run("Gaussian Blur...", "sigma=4");
+		setThreshold(20000, 65535);
+		run("Convert to Mask");
+		run("Watershed");
+		roiManager("reset");
+		run("Analyze Particles...", "size=200-infinity pixel circularity=0.00-1.00 clear include add");
+		counts=roiManager("count");
+		for(i=0; i<counts; i++) {
+		    roiManager("Select", i);
+		    run("Enlarge...", "enlarge=9 pixel");
+		    roiManager("Update");
 		}
-	}
-	if (excluded_aggregates.length>0) {
-		roiManager("select", excluded_aggregates);
-		roiManager("delete");
-	}
-	n_aggregates=roiManager("count");
-	run("Close All");
-	
-	if (n_aggregates>0) {
-		setBatchMode(false);
-		open(filepath);
-		roiManager("show all with labels");
-		choices = newArray("remove aggregates","don't remove aggregates");
-		Dialog.create(n_aggregates+" Aggregates detected for "+name);
-		Dialog.addChoice("How would you like to proceed?", choices);
-		Dialog.show();
+		run("Clear Results");
+		selectWindow(name+".tiff");
+		roiManager("deselect");
+		roiManager("Measure");
+		excluded_aggregates=newArray(0);
+		n_aggregates=0;
+		for (i = 0; i < nResults; i++) {
+			area=getResult("Area", i);
+			circ=getResult("Circ.", i);
+			mean=getResult("Mean", i);
+			kurtosis=getResult("Kurt", i);
+			int_den=getResult("IntDen", i);
+			if (circ<0.8 || area<400 || mean < 5000 || kurtosis > 0||int_den > 50000000) {
+				excluded_aggregates=Array.concat(excluded_aggregates,i);
+			}
+		}
+		if (excluded_aggregates.length>0) {
+			roiManager("select", excluded_aggregates);
+			roiManager("delete");
+		}
+		n_aggregates=roiManager("count");
 		run("Close All");
-		setBatchMode(true);
-		open(filepath);
-		decision=Dialog.getChoice();
-		if (decision=="remove aggregates") {
-			remove_aggregates(name, filepath);
+		
+		if (n_aggregates>0) {
+			setBatchMode(false);
+			open(filepath);
+			roiManager("show all with labels");
+			choices = newArray("remove aggregates","don't remove aggregates");
+			Dialog.create(n_aggregates+" Aggregates detected for "+name);
+			Dialog.addChoice("How would you like to proceed?", choices);
+			Dialog.show();
+			run("Close All");
+			setBatchMode(true);
+			open(filepath);
+			decision=Dialog.getChoice();
+			if (decision=="remove aggregates") {
+				remove_aggregates(name, filepath);
+			}
 		}
+	}else {
+		print("marker is too broadly expressed for aggregate detection");
 	}
 	run("Close All");
 	close("Roi Manager");
@@ -1220,11 +1234,6 @@ function aggregate_detection(name, filepath){
 //Aggregate removal
 function remove_aggregates(name, filepath){
 	counts=roiManager("count");
-	for(i=0; i<counts; i++) {
-	    roiManager("Select", i);
-	    run("Enlarge...", "enlarge=9 pixel");
-	    roiManager("Update");
-	}
 	selectWindow(name+".tiff");
 	run("Select None");
 	run("Duplicate...", "title="+name+"_deleted.tiff");
