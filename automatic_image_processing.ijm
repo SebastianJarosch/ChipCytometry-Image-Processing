@@ -1167,12 +1167,13 @@ function aggregate_detection(name, filepath){
 	setBatchMode(true);
 	open(filepath);
 	run("Measure");
-	if (getResult("Mean", 0) < 1500){
+	expression_density=getResult("Mean", 0);
+	if (expression_density < 1500){
 		run("Clear Results");
 		run("Duplicate...", "title="+name+"aggregate_mask.tiff");
 		run("Unsharp Mask...", "radius=100 mask=0.5");
 		run("Gaussian Blur...", "sigma=4");
-		setThreshold(20000, 65535);
+		setThreshold(30000, 65535);
 		run("Convert to Mask");
 		run("Watershed");
 		roiManager("reset");
@@ -1224,6 +1225,7 @@ function aggregate_detection(name, filepath){
 		}
 	}else {
 		print("marker is too broadly expressed for aggregate detection");
+		n_aggregates=0;
 	}
 	run("Close All");
 	close("Roi Manager");
