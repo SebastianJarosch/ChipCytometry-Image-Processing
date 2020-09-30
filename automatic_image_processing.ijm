@@ -166,6 +166,8 @@ Dialog.setInsets(15, 0, 0);
 Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
 if (tissue!="cells"){
 	Dialog.setInsets(15, 0, 0);
+	Dialog.addCheckbox(highlight_string("Measure tissue size","b"), true);
+	Dialog.setInsets(15, 0, 0);
 	Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
 	Dialog.addNumber("Threshold", 60, 0, 4, "%");
 	Dialog.addNumber("Min intensity", 100, 0, 4, "");
@@ -179,7 +181,8 @@ Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detec
 "containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><br>"+
 "<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
 "resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
-"choose to delete images, which are only present for some markers but not for others.<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of "+
+"choose to delete images, which are only present for some markers but not for others.<br><br><b>Measure tissue size</b><br>Measurement of the tissue size in square mm allows the "+
+"relative quantification of gated populations within the tissue in downstream analysis<br><br><b>Spatial spillover correction</b><br>The threshold defines, which percentage of "+
 "signal is maximal allowed to be present in only one quater of the cell. The min intensity is the min grayscale value, for which a cell is considered for spacial spillover "+
 "correction.<br><i>This option will not appear if 'cells' were selected as tissue type</i><br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
@@ -210,11 +213,13 @@ rolling_radius=Dialog.getNumber();
 checkconsistancy=Dialog.getCheckbox();
 
 if (tissue!="cells"){
+	tissue_size=Dialog.getCheckbox();
 	spillovercorrection=Dialog.getCheckbox();
 	distribution_threshold=Dialog.getNumber();
 	minCorrInt=Dialog.getNumber();
 	distribution_threshold=distribution_threshold/25;
 }else {
+	tissue_size=false
 	spillovercorrection=false;
 }
 
@@ -561,7 +566,7 @@ if (segmentationstatus == true) {
 	open(finalimages+segmentationmarker+".tiff");
 
 	//Measure tissue size
-	if (tissue!="cells") {
+	if (tissue_size==true) {
 		print("Measuring the size of the tissue section...");
 		run("Duplicate...", "title=tissue_size.tiff");
 		run("Gaussian Blur...", "sigma=20");
