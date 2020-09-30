@@ -91,7 +91,7 @@ Dialog.addHelp("<html><b>Marker checkboxes</b> (left side)<br>Here the markers w
 "Please make sure at this point, that all markers have been aquired with a good quality and the backrund subtraction worked properly for all markers.<br><br>"+
 "<b>Intranuclear</b> (middle)<br>If the marker is located intranuclear, the checkbox needs to be selected. This selection will change the processing of images before quantification and will decide "+
 "if spacial spillover correction is performed on the marker.<br><br><b>FISH</b> (right side)<br>If the channel is derived from RNA in-situ hybridisation, selcet this checkbox. " +
-"It will result in an alternative quantification algorithm. "+
+"It will result in an alternative quantification algorithm. <i>Not validated yet!</i>"+
 "<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
@@ -1128,11 +1128,12 @@ function deleteFiles(dir, ending, parent){
 	listFiles(dir);
 	for (i = 0; i < total_filelist.length; i++) {
 		if (!endsWith(total_filelist[i],".tiff")) {
-			print("\\Update:Deleting "+File.getParent(total_filelist[i]));
+			print("\\Update:Deleting "+total_filelist[i]);
 			File.delete(total_filelist[i]);
 			if (parent==true) {
 				print("\\Update:Deleting "+File.getParent(total_filelist[i]));
 				File.delete(File.getParent(total_filelist[i]));
+				showProgress(i, total_filelist.length);
 			}
 		}
 	}
