@@ -212,6 +212,7 @@ subtract_BG=Dialog.getCheckbox();
 rolling_radius=Dialog.getNumber();
 checkconsistancy=Dialog.getCheckbox();
 
+//The following options are only displayed, if the tissue type is not single cells
 if (tissue!="cells"){
 	tissue_size=Dialog.getCheckbox();
 	spillovercorrection=Dialog.getCheckbox();
