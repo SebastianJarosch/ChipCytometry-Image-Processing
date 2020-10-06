@@ -909,7 +909,7 @@ print("Summary of automatic image processing");
 print("************************************************************************************");
 print("-----------------------general project information---------------------------");
 print("Tissue type on Chip "+ChipID+": "+organism+" "+tissue);
-if (segmentationstatus == true && tissue != "cells"){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
+if (tissue_size == true && tissue != "cells"){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
 if (inconsistant == true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
