@@ -1,7 +1,7 @@
-﻿# Data
-The data contains ChipCytometry images from an inflamed human colon tissue shown in Figure 2 of the paper
+﻿# ChipCytometry Image Processing
+Macros and codes from the publication "Publication Jarosch et al..."
 
-![Biopsy image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
+![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
 
 ## System reqirements
 * ImageJ 1.53c or higher <br>
