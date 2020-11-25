@@ -220,7 +220,7 @@ if (tissue!="cells"){
 	minCorrInt=Dialog.getNumber();
 	distribution_threshold=distribution_threshold/25;
 }else {
-	tissue_size=false
+	tissue_size=false;
 	spillovercorrection=false;
 }
 
