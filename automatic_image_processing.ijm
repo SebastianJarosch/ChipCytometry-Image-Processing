@@ -843,7 +843,7 @@ if (segmentationstatus == true) {
 							run("Clear", "slice");
 							run("Select None");
 							mean=getValue("Mean");
-							setThreshold(10000, 45000);
+							setThreshold(10000, 55000);
 							run("Convert to Mask");
 							run("Ultimate Points");
 							setThreshold(1, 255);
