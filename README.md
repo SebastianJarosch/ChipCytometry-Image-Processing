@@ -18,6 +18,7 @@ Macros and codes from the publication "Publication Jarosch et al..."
 * Download the scripts from this repository
 * Run Plugins --> Install PlugIn... and select the automatic_image_processing.ijm file from this repository
 * transfer the matlab script as well as the writeFCS script in your matlab working directory
+* for the instalation of scanpy refer to the original documentation (https://scanpy.readthedocs.io)
 
 ## Workflow
 ### 1. Image export
