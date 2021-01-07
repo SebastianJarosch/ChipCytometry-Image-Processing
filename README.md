@@ -44,7 +44,7 @@ b) Run the script FCS_conversion_ChipCytometry.m <br>
 c) The ChipID.fcs file will be written in your MATLAB working directory and can be analyzed with any FlowCytometry analysis software
 
 ## Clustering of cells and neighborhood analysis using scanpy
-Scanpy was developed by the Theis Lab for analyzing scRNA sequencing data and is one of the leading packages in this field. Here we feed in a [cells x proteins] matrix instead of the [cells x genes] matrix to use the pipeline for our imaging data. Cells and their fluorescence values can be imported into scanpy as adata object via the FL_values.csv and channels.csv files. An example of how to process data can be found in clustering_chipcytometry_cells.ipynb. For further information on the API of the scanpy package, check the scanpy documentation (https://scanpy.readthedocs.io/en/stable/).<br>
+Scanpy was developed by the Theis Lab for analyzing scRNA sequencing data and is one of the leading packages in this field. Here we feed in a [cells x proteins] matrix instead of the [cells x genes] matrix to use the pipeline for our imaging data. Cells and their fluorescence values can be imported into scanpy as adata object via the FL_values.csv and channels.csv files. An example of how to process data can be found in clustering_chipcytometry_cells.ipynb. For further information on the API of the scanpy package, check the scanpy documentation (https://scanpy.readthedocs.io).<br>
 
 ## Sample data
 The folder sample data contains Chipcytometry data from an inflamed human colon biopsy shown in Figure 2 of the paper.
