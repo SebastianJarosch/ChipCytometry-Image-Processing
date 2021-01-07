@@ -1,5 +1,5 @@
 ﻿# ChipCytometry Image Processing
-Macros and codes from the publication <i>Jarosch, Koehlen et al. Automated in-situ cell neighborhood analysis by highly multiplexed ChipCytometry</i>
+Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Automated in-situ cell neighborhood analysis by highly multiplexed ChipCytometry</i>
 
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
 
