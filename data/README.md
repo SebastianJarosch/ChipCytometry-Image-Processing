@@ -1,5 +1,5 @@
 # Data
-Data for the inflamed colon tissue shown in Figure 2 of the paper provided for reproduction of the quantification data and testing the analysis pipeline
+Data from an inflamed human colon tissue shown in Figure 2 of the paper provided for reproduction of the quantification data and testing the analysis pipeline
 
 ![Image of Biopsy](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/Biopsy_1.png)
 
