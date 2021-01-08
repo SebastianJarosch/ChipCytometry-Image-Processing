@@ -4,6 +4,7 @@ Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Automat
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
 
 ## System reqirements
+* 32 Gb RAM (or more, depending on the size of the tissue sample)
 * ImageJ 1.53c or higher <br>
 * Matlab 2018b or higher <br>
 * Python 3.7+ for clustering and neighborhood analysis <br>
