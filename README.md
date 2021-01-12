@@ -23,7 +23,7 @@ Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Automat
 
 ## Workflow
 ### 1. Image export
-a) Adjust background and contrast value in Zellkraftwerk app in order to get the best snapshot from the HDR image <br>
+a) Adjust background and contrast value in Zellkraftwerk app in order to get the best snapshot from the HDR image. This step is crucial, the background needs to be as dark as possible. The true staining intensity might seem relativly dim but it will still be quantified as signal. <br>
 b) Export images for each channel in the Zellkraftwerk app as 16-bit grayscale tiff images.<br>
 c) Copy the Scanjob folders located in *Chipfolder/scanjobs/* for each channel in a new directory named with the chip ID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files in order to avoid any data loss! </b> <br>
 d) Rename the scanjob folders with their corresponding epitope names <br>
