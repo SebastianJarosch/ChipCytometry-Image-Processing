@@ -236,6 +236,30 @@ for (j = 0; j < segmentationmarkerpositions.length; j++) {
 
 positions = newArray();
 inconsistant = false;
+emptypositions = false;
+for (i = 0; i < markernumber_total; i++) {
+	
+	filelist = getFileList(pathraw+folders[i]);
+	missing=newArray();
+	for (j = 0; j < lengthOf(filelist); j++) {
+		subdir=getFileList(pathraw+folders[i]+"/"+filelist[j]);
+		subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
+		length=lengthOf(subsubdir);
+		if (length==0) {
+			missing=Array.concat(missing,newArray(substring(filelist[j],0,lengthOf(filelist[j])-1)));
+		}
+	}
+	if (lengthOf(missing)>0) {
+		print(folders[i]+" images missing for the following positions:");
+		Array.print(missing);
+		emptypositions=true;
+	}
+}
+if (emptypositions==true){
+	waitForUser("Missing images detected. Please check your input folder according to the log file");
+	exit();
+}
+
 for (i = 0; i < markernumber_total; i++) {
 	next = getFileList(pathraw+folders[i]);
 	for (k = 0; k < next.length; k++) {
