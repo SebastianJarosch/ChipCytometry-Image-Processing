@@ -172,6 +172,11 @@ if (tissue!="cells"){
 	Dialog.addNumber("Threshold", 60, 0, 4, "%");
 	Dialog.addNumber("Min intensity", 100, 0, 4, "");
 }
+fish_marker=Array.sort(fish);
+Dialog.setInsets(15, 0, 0);
+if (fish_marker[lengthOf(fish)-1]==1){
+	Dialog.addNumber(highlight_string("FISH marker threshold ","b"),500,0,4,"");
+}
 Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detected from a early PerCP Background channel and will be segmented for quantification as well. "+
 "Select the channel from the list of processed channels for erythrocyte detection. This channel will also be used for intensity quantifications later on.<br>"+
 "<br><b>Aggregate removal</b><br><cite>Implemented, but not validated yet. This beta version can be tested if markers are prone to have a high number of dye aggregates.<br><br></cite>"+
@@ -223,7 +228,9 @@ if (tissue!="cells"){
 	tissue_size=false;
 	spillovercorrection=false;
 }
-
+if (fish_marker[lengthOf(fish)-1]==1){
+	minFishInt=Dialog.getNumber();
+}
 totalpositions=xsize*ysize+(firsttile-1);
 error_cells=newArray();
 
@@ -863,19 +870,21 @@ if (segmentationstatus == true) {
 						run("Duplicate...","ROI");
 						kurt=getValue("Kurt");
 						if (kurt > 0) {
-							run("Make Inverse");
-							run("Clear", "slice");
-							run("Select None");
-							mean=getValue("Mean");
-							setThreshold(10000, 55000);
-							run("Convert to Mask");
-							run("Ultimate Points");
-							setThreshold(1, 255);
-							run("Convert to Mask");
-							run("Analyze Particles...", "size=0-1 summarize include");
-							resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
-							if (resultsarray[j]<0) {resultsarray[j]=0;}
-							Table.reset("Summary");
+							if (parseFloat(getValue("Mean")) > minFishInt){
+								run("Make Inverse");
+								run("Clear", "slice");
+								run("Select None");
+								mean=getValue("Mean");
+								setThreshold(10000, 55000);
+								run("Convert to Mask");
+								run("Ultimate Points");
+								setThreshold(1, 255);
+								run("Convert to Mask");
+								run("Analyze Particles...", "size=0-1 summarize include");
+								resultsarray[j]=(parseInt(Table.getString("Count", 0))-1)*mean;
+								if (resultsarray[j]<0) {resultsarray[j]=0;}
+								Table.reset("Summary");
+							}
 						}else {resultsarray[j]=0;}
 						close();
 						progress=((j+1)/total_cells)*100;
@@ -883,10 +892,10 @@ if (segmentationstatus == true) {
 					}
 					for (j = 0; j < total_cells; j++) {
 						setResult("Mean", nResults-total_cells+j, resultsarray[j]);
-						updateResults();
 						progress=((j+1)/total_cells)*100;
 						print("\\Update: Calculating values for marker "+i+"/"+slices+" ("+slicename+") "+progress+"% ...");
 					}
+					updateResults();
 				}
 			}
 			run("Next Slice [>]");
