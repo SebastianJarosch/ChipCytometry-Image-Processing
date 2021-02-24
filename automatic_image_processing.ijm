@@ -183,8 +183,10 @@ Dialog.addCheckbox(highlight_string("Minimum filter","u"), true);
 Dialog.addNumber(highlight_string("Radius ","i"), 0.5,0,4,"pixel");
 Dialog.addCheckbox(highlight_string("Subtract background","u"), true);
 Dialog.addNumber(highlight_string("Rolling ball radius ","i"), 10,0,4,"pixel");
-Dialog.setInsets(15, 0, 0);
-Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
+if (datatype=="Chipcytometry") {
+	Dialog.setInsets(15, 0, 0);
+	Dialog.addCheckbox(highlight_string("Marker consistancy check","b"), true);
+}
 if (tissue!="cells"){
 	Dialog.setInsets(15, 0, 0);
 	Dialog.addCheckbox(highlight_string("Measure tissue size","b"), true);
@@ -236,7 +238,7 @@ minimum_correction=Dialog.getCheckbox();
 minimum_radius=Dialog.getNumber();
 subtract_BG=Dialog.getCheckbox();
 rolling_radius=Dialog.getNumber();
-checkconsistancy=Dialog.getCheckbox();
+if (datatype=="Chipcytometry") {checkconsistancy=Dialog.getCheckbox();}
 
 //The following options are only displayed, if the tissue type is not single cells
 if (tissue!="cells"){
