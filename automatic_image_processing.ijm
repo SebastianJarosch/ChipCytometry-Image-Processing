@@ -1,18 +1,34 @@
 //Run script to enable y-Overlap in the stitching Plug-In
 //If you are running the script for the first time, you will be asked to restart imageJ
 eval("bsh", "plugin.Stitching_Grid.seperateOverlapY = true;");
- 
+
+//specify input format
+Dialog.create("Specify data input");
+datatypes=newArray("Chipcytometry","stitched images");
+Dialog.setInsets(0, 0, 0);
+Dialog.addChoice("Datatype", datatypes, "Chipcytometry");
+Dialog.show();
+
+//Get values from the dialog
+datatype=Dialog.getChoice();
+
+
 //choose the directory where the raw images are stored and try to catch the ChipID
 pathraw=getDirectory("Choose the directory for raw data");
 ChipID=substring(pathraw, lengthOf(pathraw)-8, lengthOf(pathraw)-1);
+if (datatype!="Chipcytometry") {ChipID="ChipID";}
 
 //get the markers which are present in the subfolder of the path with rawdata
 folders=getFileList(pathraw);
 markernumber=folders.length;
-
+folders_original=Array.copy(folders);
 //Check if the chip has already been analyzed by searching for the "Results" folder
 for (i = 0; i < markernumber; i++) {
 	folders[i]=substring(folders[i], 0, lengthOf(folders[i])-1);
+	if (datatype!="Chipcytometry") {
+		temp_strings=split(folders[i], ".");
+		folders[i]=temp_strings[0];
+	}
 	if (folders[i]=="Results") {
 		print("Chip has already been analyzed");
 		exit("Chip already analyzed. Please delete results folder and start macro again")
@@ -31,18 +47,20 @@ Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Organism", organisms, "human");
 Dialog.addChoice("Tissue", tissues, "colon");
 Dialog.setInsets(10, 0, 0);
-highlight_message("Size of the tissue section", "b");
-Dialog.addNumber("grid size x", 6);
-Dialog.addNumber("grid size y", 4);
-Dialog.addNumber("first tile", 1);
-Dialog.setInsets(10, 0, 0);
-Dialog.addCheckbox("Clean folder", false)
-Dialog.setInsets(0, 0, 0);
-highlight_message("This will delete all files except","i");
-Dialog.setInsets(0, 0, 0);
-highlight_message("of the .tiff files needed for the","i");
-Dialog.setInsets(0, 0, 0);
-highlight_message("analysis to save disk space.","i");
+if (datatype=="Chipcytometry") {
+	highlight_message("Size of the tissue section", "b");
+	Dialog.addNumber("grid size x", 6);
+	Dialog.addNumber("grid size y", 4);
+	Dialog.addNumber("first tile", 1);
+	Dialog.setInsets(10, 0, 0);
+	Dialog.addCheckbox("Clean folder", false)
+	Dialog.setInsets(0, 0, 0);
+	highlight_message("This will delete all files except","i");
+	Dialog.setInsets(0, 0, 0);
+	highlight_message("of the .tiff files needed for the","i");
+	Dialog.setInsets(0, 0, 0);
+	highlight_message("analysis to save disk space.","i");
+}
 Dialog.addHelp("<html><b>Chip & tissue properties</b><br>The selection of the tissue type will affect the default values for some parameters, like the enlargement of ROIs "+
 "which is reduced in denser tissues to avoid spillover from neighboring cells.<br><br><b>Size of the tissue section</b><br>The size in tiles can be evaluated from the Cell Explorer App by looking at the overview image. "+
 "the y size needs to be specified starting from the first tile.<br><br><b>Clean folder</b><br>Deletes the folders <cite>posref</cite>, <cite>flimages</cite>, as well as the <cite>.blob32, .xml, .png</cite> and <cite>.csv</cite> files. "+
@@ -53,10 +71,13 @@ Dialog.show();
 ChipID=Dialog.getString();
 organism=Dialog.getChoice();
 tissue=Dialog.getChoice();
-xsize=Dialog.getNumber();
-ysize=Dialog.getNumber();
-firsttile=Dialog.getNumber();
-clean=Dialog.getCheckbox();
+clean=false;
+if (datatype=="Chipcytometry") {
+	xsize=Dialog.getNumber();
+	ysize=Dialog.getNumber();
+	firsttile=Dialog.getNumber();
+	clean=Dialog.getCheckbox();
+}
 print("Chip "+ChipID+" contains "+organism+" "+tissue+" tissue");
 
 if (clean==true) {
@@ -231,127 +252,128 @@ if (tissue!="cells"){
 if (fish_marker[lengthOf(fish)-1]==1){
 	minFishInt=Dialog.getNumber();
 }
-totalpositions=xsize*ysize+(firsttile-1);
 error_cells=newArray();
+inconsistant = false;
 
-
-//Check for conistancy of positions between markers, using the segmentation marker as refference
-segmentationmarkerpositions = getFileList(pathraw+"/"+segmentationmarker);
-for (j = 0; j < segmentationmarkerpositions.length; j++) {
-		segmentationmarkerpositions[j]=substring(segmentationmarkerpositions[j], 0, lengthOf(segmentationmarkerpositions[j])-1);
-}
-
-positions = newArray();
-inconsistant = false;
-emptypositions = false;
-for (i = 0; i < markernumber_total; i++) {
-	
-	filelist = getFileList(pathraw+folders[i]);
-	missing=newArray();
-	for (j = 0; j < lengthOf(filelist); j++) {
-		subdir=getFileList(pathraw+folders[i]+"/"+filelist[j]);
-		subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
-		length=lengthOf(subsubdir);
-		if (length==0) {
-			missing=Array.concat(missing,newArray(substring(filelist[j],0,lengthOf(filelist[j])-1)));
-		}
-	}
-	if (lengthOf(missing)>0) {
-		print(folders[i]+" images missing for the following positions:");
-		Array.print(missing);
-		emptypositions=true;
-	}
-}
-if (emptypositions==true){
-	waitForUser("Missing images detected. Please check your input folder according to the log file");
-	exit();
-}
-
-for (i = 0; i < markernumber_total; i++) {
-	next = getFileList(pathraw+folders[i]);
-	for (k = 0; k < next.length; k++) {
-		next[k]=substring(next[k], 0, lengthOf(next[k])-1);
-	}
-	if (next.length > segmentationmarkerpositions.length){
-		n = next.length - segmentationmarkerpositions.length;
-		errors = ArrayDifference(segmentationmarkerpositions, next);
-		Array.sort(errors);
-		print(n+" additional positions detected in "+folders[i]+":");
-		Array.print(errors);
-		inconsistant = true;
-	}
-	if (next.length < segmentationmarkerpositions.length){
-		n = segmentationmarkerpositions.length-next.length;
-		errors = ArrayDifference(segmentationmarkerpositions, next);
-		Array.sort(errors);
-		print(n+" positions are missing in "+folders[i]+":");
-		Array.print(errors);
-		inconsistant = true;
-	}
-	if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
-		print("Check OK for "+folders[i]);
-	}
-}
-
-//delete folders not present in all markers
-if (checkconsistancy == true && inconsistant == true) {
-	choices = newArray("delete additional positions","exit");
-	Dialog.create("Inconsistancy detected");
-	Dialog.addChoice("How would you like to proceed?", choices);
-	Dialog.show();
-	decision=Dialog.getChoice();
-	if (decision=="exit") {
-		exit();
-	}
-	if (decision=="delete additional positions") {
-		for (i = 0; i < markernumber_total; i++) {
-			if(folders[i] != segmentationmarker){
-				next = getFileList(pathraw+folders[i]);
-				for (k = 0; k < next.length; k++) {
-					next[k]=substring(next[k], 0, lengthOf(next[k])-1);
-				}
-				if (next.length > segmentationmarkerpositions.length){
-					errors = ArrayDifference(segmentationmarkerpositions, next);
-					for (l = 0; l < errors.length; l++) {
-						File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr/HDRFL.tiff");
-						File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr");
-						File.delete(pathraw+folders[i]+"/"+errors[l]);
-					}
-				}
-				if (next.length < segmentationmarkerpositions.length){
-					errors = ArrayDifference(segmentationmarkerpositions, next);
-					for (l = 0; l < errors.length; l++) {
-						for (m = 0; m < marker.length; m++) {
-							File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr/HDRFL.tiff");
-							File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr");
-							File.delete(pathraw+folders[m]+"/"+errors[l]);
-						}
-					}
-				}
-				if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
-					print("Check OK for "+folders[i]);
-				}
-			}
-		}
-	}
-
-	//check again for consistancy
+if (datatype=="Chipcytometry") {
+	totalpositions=xsize*ysize+(firsttile-1);
+	//Check for conistancy of positions between markers, using the segmentation marker as refference
 	segmentationmarkerpositions = getFileList(pathraw+"/"+segmentationmarker);
 	for (j = 0; j < segmentationmarkerpositions.length; j++) {
 			segmentationmarkerpositions[j]=substring(segmentationmarkerpositions[j], 0, lengthOf(segmentationmarkerpositions[j])-1);
 	}
+	
+	positions = newArray();
+	emptypositions = false;
+	for (i = 0; i < markernumber_total; i++) {
+		
+		filelist = getFileList(pathraw+folders[i]);
+		missing=newArray();
+		for (j = 0; j < lengthOf(filelist); j++) {
+			subdir=getFileList(pathraw+folders[i]+"/"+filelist[j]);
+			subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
+			length=lengthOf(subsubdir);
+			if (length==0) {
+				missing=Array.concat(missing,newArray(substring(filelist[j],0,lengthOf(filelist[j])-1)));
+			}
+		}
+		if (lengthOf(missing)>0) {
+			print(folders[i]+" images missing for the following positions:");
+			Array.print(missing);
+			emptypositions=true;
+		}
+	}
+	if (emptypositions==true){
+		waitForUser("Missing images detected. Please check your input folder according to the log file");
+		exit();
+	}
+	
 	for (i = 0; i < markernumber_total; i++) {
 		next = getFileList(pathraw+folders[i]);
 		for (k = 0; k < next.length; k++) {
 			next[k]=substring(next[k], 0, lengthOf(next[k])-1);
 		}
+		if (next.length > segmentationmarkerpositions.length){
+			n = next.length - segmentationmarkerpositions.length;
+			errors = ArrayDifference(segmentationmarkerpositions, next);
+			Array.sort(errors);
+			print(n+" additional positions detected in "+folders[i]+":");
+			Array.print(errors);
+			inconsistant = true;
+		}
+		if (next.length < segmentationmarkerpositions.length){
+			n = segmentationmarkerpositions.length-next.length;
+			errors = ArrayDifference(segmentationmarkerpositions, next);
+			Array.sort(errors);
+			print(n+" positions are missing in "+folders[i]+":");
+			Array.print(errors);
+			inconsistant = true;
+		}
 		if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
 			print("Check OK for "+folders[i]);
-			inconsistant=false;
 		}
-		if (next.length != segmentationmarkerpositions.length) {
-			print("Check failed for "+folders[i]);
-			exit("data is still inconsistant!");
+	}
+	
+	//delete folders not present in all markers
+	if (checkconsistancy == true && inconsistant == true) {
+		choices = newArray("delete additional positions","exit");
+		Dialog.create("Inconsistancy detected");
+		Dialog.addChoice("How would you like to proceed?", choices);
+		Dialog.show();
+		decision=Dialog.getChoice();
+		if (decision=="exit") {
+			exit();
+		}
+		if (decision=="delete additional positions") {
+			for (i = 0; i < markernumber_total; i++) {
+				if(folders[i] != segmentationmarker){
+					next = getFileList(pathraw+folders[i]);
+					for (k = 0; k < next.length; k++) {
+						next[k]=substring(next[k], 0, lengthOf(next[k])-1);
+					}
+					if (next.length > segmentationmarkerpositions.length){
+						errors = ArrayDifference(segmentationmarkerpositions, next);
+						for (l = 0; l < errors.length; l++) {
+							File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr/HDRFL.tiff");
+							File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr");
+							File.delete(pathraw+folders[i]+"/"+errors[l]);
+						}
+					}
+					if (next.length < segmentationmarkerpositions.length){
+						errors = ArrayDifference(segmentationmarkerpositions, next);
+						for (l = 0; l < errors.length; l++) {
+							for (m = 0; m < marker.length; m++) {
+								File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr/HDRFL.tiff");
+								File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr");
+								File.delete(pathraw+folders[m]+"/"+errors[l]);
+							}
+						}
+					}
+					if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
+						print("Check OK for "+folders[i]);
+					}
+				}
+			}
+		}
+	
+		//check again for consistancy
+		segmentationmarkerpositions = getFileList(pathraw+"/"+segmentationmarker);
+		for (j = 0; j < segmentationmarkerpositions.length; j++) {
+				segmentationmarkerpositions[j]=substring(segmentationmarkerpositions[j], 0, lengthOf(segmentationmarkerpositions[j])-1);
+		}
+		for (i = 0; i < markernumber_total; i++) {
+			next = getFileList(pathraw+folders[i]);
+			for (k = 0; k < next.length; k++) {
+				next[k]=substring(next[k], 0, lengthOf(next[k])-1);
+			}
+			if (next.length == segmentationmarkerpositions.length && folders[i] != segmentationmarker){
+				print("Check OK for "+folders[i]);
+				inconsistant=false;
+			}
+			if (next.length != segmentationmarkerpositions.length) {
+				print("Check failed for "+folders[i]);
+				exit("data is still inconsistant!");
+			}
 		}
 	}
 }
@@ -366,16 +388,6 @@ for (i = 0; i < markernumber_total; i++) {
 selectWindow("Log");
 saveAs("Text", pathraw+"channels.csv"); 
 
-//Print initial values to Log
-print("size_x = "+xsize);
-print("size_y = "+ysize);
-print("first tile for stitching = "+firsttile);
-print("Number of positions to be stitched = "+totalpositions);
-print("Segmentation: "+segmentationstatus);
-print("Segmentationmarker: "+segmentationmarker);
-print("FL-calculation: "+valuecalculation);
-Array.print(marker);
-
 //Initialize time values
 Tempty = 0;
 Trenaming = 0;
@@ -386,100 +398,123 @@ Tcalculation = 0;
 startTtotal = getTime();
 startT = getTime;
 
-//generate black images for stitching which cover the whole area
-setBatchMode(true);
-for (i = firsttile; i <= totalpositions; i++) {
-	if (i<10) {
-		newImage(i, "16-bit black", 1392, 1040, 1);
-		run("16-bit");
-		saveAs("Tiff", pathraw+"00"+i);
-		close();
-	}		
-	if (i<100 && i>9 ){
-		newImage(i, "16-bit black", 1392, 1040, 1);
-		run("16-bit");
-		saveAs("Tiff", pathraw+"0"+i);
-		close();
-	}
-	if (i<1000 && i>99 ){
-		newImage(i, "16-bit black", 1392, 1040, 1);
-		run("16-bit");
-		saveAs("Tiff", pathraw+i);
-		close();
-	}
-	print("\\Update: Framework images generated successfully: "+i);
-}
-print ("processing time empty positions ="+(getTime-startT)/1000+"s");
-Tempty = Tempty+((getTime-startT)/1000);
-startT = getTime;
-
-//get files from folder and rename according to their directory
-for (j = 0; j < markernumber_total; j++) {
+if (datatype=="ChipCytometry") {
+	//Print initial values to Log
+	print("size_x = "+xsize);
+	print("size_y = "+ysize);
+	print("first tile for stitching = "+firsttile);
+	print("Number of positions to be stitched = "+totalpositions);
+	print("Segmentation: "+segmentationstatus);
+	print("Segmentationmarker: "+segmentationmarker);
+	print("FL-calculation: "+valuecalculation);
+	Array.print(marker);
+	
+	
+	//generate black images for stitching which cover the whole area
 	setBatchMode(true);
-	print(folders[j]);
-	print("");
 	for (i = firsttile; i <= totalpositions; i++) {
-		if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
-			open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
+		if (i<10) {
+			newImage(i, "16-bit black", 1392, 1040, 1);
 			run("16-bit");
 			saveAs("Tiff", pathraw+"00"+i);
 			close();
-			print("\\Update: Image renamed successfully: "+i);
-		}
-		if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
-			open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+		}		
+		if (i<100 && i>9 ){
+			newImage(i, "16-bit black", 1392, 1040, 1);
 			run("16-bit");
 			saveAs("Tiff", pathraw+"0"+i);
 			close();
-			print("\\Update: Image renamed successfully: "+i);
 		}
-		if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
-			open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+		if (i<1000 && i>99 ){
+			newImage(i, "16-bit black", 1392, 1040, 1);
 			run("16-bit");
 			saveAs("Tiff", pathraw+i);
 			close();
-			print("\\Update: Image renamed successfully: "+i);
-		}						
+		}
+		print("\\Update: Framework images generated successfully: "+i);
 	}
-	print ("processing time renaming ="+(getTime-startT)/1000+"s");
-	
-	//Save image sequence to the stiching folder and overwrite corresponding black tiles
-	run("Image Sequence...", "open=pathraw");
-	stackname=getTitle();
-	windowname=stackname;
-	selectWindow(windowname);
-	run("Image Sequence... ", "format=TIFF use save=pathraw");
-	close();
-	print("Images saved");
-	Trenaming = Trenaming+((getTime-startT)/1000);
+	print ("processing time empty positions ="+(getTime-startT)/1000+"s");
+	Tempty = Tempty+((getTime-startT)/1000);
 	startT = getTime;
 	
-	//Run stitching Plugin from ImageJ with files generated in the folder
-	run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
-	"first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] "+
-	"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save memory (but be slower)] "+
-	"image_output=[Fuse and display]");
+	//get files from folder and rename according to their directory
+	for (j = 0; j < markernumber_total; j++) {
+		setBatchMode(true);
+		print(folders[j]);
+		print("");
+		for (i = firsttile; i <= totalpositions; i++) {
+			if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
+				open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
+				run("16-bit");
+				saveAs("Tiff", pathraw+"00"+i);
+				close();
+				print("\\Update: Image renamed successfully: "+i);
+			}
+			if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
+				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+				run("16-bit");
+				saveAs("Tiff", pathraw+"0"+i);
+				close();
+				print("\\Update: Image renamed successfully: "+i);
+			}
+			if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
+				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+				run("16-bit");
+				saveAs("Tiff", pathraw+i);
+				close();
+				print("\\Update: Image renamed successfully: "+i);
+			}						
+		}
+		print ("processing time renaming ="+(getTime-startT)/1000+"s");
+		
+		//Save image sequence to the stiching folder and overwrite corresponding black tiles
+		run("Image Sequence...", "open=pathraw");
+		stackname=getTitle();
+		windowname=stackname;
+		selectWindow(windowname);
+		run("Image Sequence... ", "format=TIFF use save=pathraw");
+		close();
+		print("Images saved");
+		Trenaming = Trenaming+((getTime-startT)/1000);
+		startT = getTime;
+		
+		//Run stitching Plugin from ImageJ with files generated in the folder
+		run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
+		"first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] "+
+		"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save memory (but be slower)] "+
+		"image_output=[Fuse and display]");
+		File.makeDirectory(pathraw+"Results");
+		saveAs("tiff", pathraw+"Results/"+folders[j]+".tiff");
+		close();
+		Tstitching = Tstitching+((getTime-startT)/1000);
+	}
+	
+	//delete unstiched images
+	for (i = firsttile; i <= totalpositions; i++) {
+		if (i<10) {
+			File.delete(pathraw+"00"+i+".tif");
+			print("\\Update:Image 00"+i+" deleted");
+		}		
+		if (i<100 && i>9 ){
+			File.delete(pathraw+"0"+i+".tif");
+			print("\\Update:Image 0"+i+" deleted");
+		}
+		if (i<1000 && i>99 ){
+			File.delete(pathraw+i+".tif");
+			print("\\Update:Image "+i+" deleted");
+		}
+	}
+}
+if (datatype!="ChipCytometry") {
 	File.makeDirectory(pathraw+"Results");
-	saveAs("tiff", pathraw+"Results/"+folders[j]+".tiff");
-	close();
-	Tstitching = Tstitching+((getTime-startT)/1000);
+	for (j = 0; j < markernumber_total; j++) {
+		setBatchMode(true);
+		open(pathraw+folders_original[j]);
+		run("16-bit");
+		saveAs("Tiff", pathraw+"Results/"+folders_original[j]);
+		close();
 }
 
-//delete unstiched images
-for (i = firsttile; i <= totalpositions; i++) {
-	if (i<10) {
-		File.delete(pathraw+"00"+i+".tif");
-		print("\\Update:Image 00"+i+" deleted");
-	}		
-	if (i<100 && i>9 ){
-		File.delete(pathraw+"0"+i+".tif");
-		print("\\Update:Image 0"+i+" deleted");
-	}
-	if (i<1000 && i>99 ){
-		File.delete(pathraw+i+".tif");
-		print("\\Update:Image "+i+" deleted");
-	}
-}
 //Extract erys from autofluorescence
 if (erys==true){
 	print("Started erythrocyte detection...");
@@ -946,18 +981,21 @@ if (tissue_size == true && tissue != "cells"){print("Area of the tissue: "+area+
 if (inconsistant == true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
-print("Size of the stiched image: "+xsize+" x "+ysize);
-print("Number of the first image: "+firsttile);
-print("Number of positions to be stitched: "+(xsize*ysize));
+if (datatype=="Chipcytometry") {
+	print("Size of the stiched image: "+xsize+" x "+ysize);
+	print("Number of the first image: "+firsttile);
+	print("Number of positions to be stitched: "+(xsize*ysize));
+	print("Time for generating empty positions: "+Tempty+" s");
+	print("Time for renaming positions: "+Trenaming+" s");
+}
 print("Markers analyzed: "+markernumber_total);
-print("Time for generating empty positions: "+Tempty+" s");
-print("Time for renaming positions: "+Trenaming+" s");
 Ttotal = (getTime-startTtotal)/60000;
 print("Total time needed for the automatic processing: "+Ttotal+" min");
-
-print("************************************************************************************");
-print("---------------------------------Stitching----------------------------------------");
-print("Time for stitching: "+Tstitching+" s");
+if (datatype=="Chipcytometry") {
+	print("************************************************************************************");
+	print("---------------------------------Stitching----------------------------------------");
+	print("Time for stitching: "+Tstitching+" s");
+}
 if (erys==true) {
 	print("Erythrocytes were detected from "+ery_channel);
 }
