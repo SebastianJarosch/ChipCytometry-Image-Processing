@@ -238,7 +238,8 @@ minimum_correction=Dialog.getCheckbox();
 minimum_radius=Dialog.getNumber();
 subtract_BG=Dialog.getCheckbox();
 rolling_radius=Dialog.getNumber();
-if (datatype=="Chipcytometry") {checkconsistancy=Dialog.getCheckbox();}
+if (datatype=="Chipcytometry") {checkconsistancy=Dialog.getCheckbox();
+}
 
 //The following options are only displayed, if the tissue type is not single cells
 if (tissue!="cells"){
@@ -255,9 +256,11 @@ if (fish_marker[lengthOf(fish)-1]==1){
 	minFishInt=Dialog.getNumber();
 }
 error_cells=newArray();
-inconsistant = false;
 
-if (datatype=="Chipcytometry") {
+inconsistant = false;
+
+
+if (datatype=="Chipcytometry") {
 	totalpositions=xsize*ysize+(firsttile-1);
 	//Check for conistancy of positions between markers, using the segmentation marker as refference
 	segmentationmarkerpositions = getFileList(pathraw+"/"+segmentationmarker);
@@ -273,7 +276,9 @@ error_cells=newArray();
 		missing=newArray();
 		for (j = 0; j < lengthOf(filelist); j++) {
 			subdir=getFileList(pathraw+folders[i]+"/"+filelist[j]);
-			subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
+			if (lengthOf(subdir)!=0){
+				subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
+			}
 			length=lengthOf(subsubdir);
 			if (length==0) {
 				missing=Array.concat(missing,newArray(substring(filelist[j],0,lengthOf(filelist[j])-1)));
@@ -993,11 +998,13 @@ if (datatype=="Chipcytometry") {
 print("Markers analyzed: "+markernumber_total);
 Ttotal = (getTime-startTtotal)/60000;
 print("Total time needed for the automatic processing: "+Ttotal+" min");
-if (datatype=="Chipcytometry") {
+
+if (datatype=="Chipcytometry") {
 	print("************************************************************************************");
 	print("---------------------------------Stitching----------------------------------------");
 	print("Time for stitching: "+Tstitching+" s");
-}
+
+}
 if (erys==true) {
 	print("Erythrocytes were detected from "+ery_channel);
 }
