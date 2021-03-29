@@ -278,9 +278,10 @@ if (datatype=="Chipcytometry") {
 			subdir=getFileList(pathraw+folders[i]+"/"+filelist[j]);
 			if (lengthOf(subdir)!=0){
 				subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
+			}else{
+				subsubdir=newArray();
 			}
-			length=lengthOf(subsubdir);
-			if (length==0) {
+			if (lengthOf(subsubdir)==0) {
 				missing=Array.concat(missing,newArray(substring(filelist[j],0,lengthOf(filelist[j])-1)));
 			}
 		}
@@ -290,7 +291,7 @@ if (datatype=="Chipcytometry") {
 			emptypositions=true;
 		}
 	}
-	if (emptypositions==true){
+	if (emptypositions==true && checkconsistancy == true){
 		waitForUser("Missing images detected. Please check your input folder according to the log file");
 		exit();
 	}
@@ -511,8 +512,7 @@ if (datatype=="ChipCytometry") {
 			print("\\Update:Image "+i+" deleted");
 		}
 	}
-}
-if (datatype!="ChipCytometry") {
+}else {
 	File.makeDirectory(pathraw+"Results");
 	for (j = 0; j < markernumber_total; j++) {
 		setBatchMode(true);
@@ -520,7 +520,9 @@ if (datatype!="ChipCytometry") {
 		run("16-bit");
 		saveAs("Tiff", pathraw+"Results/"+folders_original[j]);
 		close();
+	}
 }
+
 
 //Extract erys from autofluorescence
 if (erys==true){
@@ -551,13 +553,11 @@ if (erys==true){
 		save(pathraw+"Results/"+ery_channel+".tiff");
 		run("Close All");
 		print("Erythrocyte detection finished...");
-	}
-else {
+	}else {
 		print("No vessels detected...");
 		erys=false;
 	}
 }
-
 
 //get file list for all stiched images
 finalimages=pathraw+"Results/";
@@ -984,8 +984,8 @@ print("Summary of automatic image processing");
 print("************************************************************************************");
 print("-----------------------general project information---------------------------");
 print("Tissue type on Chip "+ChipID+": "+organism+" "+tissue);
-if (tissue_size == true && tissue != "cells"){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
-if (inconsistant == true){
+if (tissue_size == true && tissue != "cells" && segmentationstatus == true){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
+if (inconsistant == true || emptypositions==true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
 if (datatype=="Chipcytometry") {
