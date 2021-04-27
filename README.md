@@ -40,7 +40,7 @@ a) Check the stitched images in Results/stitching to see if they are in a good q
 b) You can review the segmentation by loading the stitched nuclei image and the saved ROIs from Results/segmentation into imageJ or by simply reviewing the mask image from the segmentation folder. 
 
 ### 4. Write FCS files in MATLAB
-*Here we provide a script for matlab, but of course, the conversion can also be performed with other method for the converion of .fcs files from a cell x parameter input. A Python alternative would be the fcswrite method found in this repository: https://github.com/ZELLMECHANIK-DRESDEN/fcswrite This function resulted in an identical .fcs file, when we compared it to the matlab script.* <br>
+*Here we provide a script for matlab, but of course, the conversion can also be performed with other method for the converion of .fcs files from a cell x parameter input. A Python alternative for example would be the fcswrite method found in this repository: https://github.com/ZELLMECHANIK-DRESDEN/fcswrite. This function resulted in an identical .fcs file, when we compared it to the matlab script.* <br>
 a) Copy the FL_values.csv and channels.csv from the generated Results folder in your MATLAB working directory <br>
 b) Run the script FCS_conversion_ChipCytometry.m <br>
 c) The ChipID.fcs file will be written in your MATLAB working directory and can be analyzed with any flow cytometry analysis software
