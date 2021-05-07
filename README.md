@@ -1,14 +1,16 @@
 ﻿# ChipCytometry Image Processing
-Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Automated in-situ cell neighborhood analysis by highly multiplexed ChipCytometry</i>
+Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Multiplexed imaging and automated signal quantification in formalin-fixed paraffin-embedded tissues by ChipCytometry</i>
 
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
 
 ## System reqirements
 * 32 Gb RAM (or more, depending on the size of the tissue sample)
 * ImageJ 1.53c or higher <br>
-* Matlab 2018b or higher <br>
-* Python 3.7+ for clustering and neighborhood analysis <br>
-* Flow cytometry software for analyzing .fcs files (e.g. FowJo)
+* optional: <br>
+  * *Matlab 2018b or higher* <br>
+  * *Flow cytometry software for analyzing .fcs files* (e.g. FowJo)
+  * *Python 3.7+ for clustering and neighborhood analysis* <br>
+
 
 ## Third party packages, plugins and scripts
 * Scanpy (https://github.com/theislab/scanpy) <br>
