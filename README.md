@@ -1,5 +1,5 @@
 ﻿# ChipCytometry Image Processing
-Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Multiplexed imaging and automated signal quantification in formalin-fixed paraffin-embedded tissues by ChipCytometry</i>
+Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Multiplexed imaging and automated signal quantification in formalin-fixed paraffin-embedded tissues by ChipCytometry</i> (submitted)
 
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
 
