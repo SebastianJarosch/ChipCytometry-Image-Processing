@@ -1,5 +1,5 @@
 ﻿# ChipCytometry Image Processing
-Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Multiplexed imaging and automated signal quantification in formalin-fixed paraffin-embedded tissues by ChipCytometry</i> (submitted)
+Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Multiplexed imaging and automated signal quantification in formalin-fixed paraffin-embedded tissues by ChipCytometry</i> (submitted). The analysis pipeline was developed for ChipCytometry data. Basically it can be used with every other image data (see image requirements for other imaging data at the end of this readme file).
 
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
 
@@ -20,6 +20,7 @@ Macros, data and code used in the publication <i>Jarosch, Koehlen et al. Multipl
 * Install Fiji
 * Download the scripts from this repository
 * Run Plugins --> Install PlugIn... and select the automatic_image_processing.ijm file from this repository
+* For segmentation using stardist, you need to intall the plugin first (https://github.com/stardist/stardist-imagej/)
 * Transfer the MATLAB script as well as the writeFCS script in your matlab working directory
 * For the installation of Scanpy refer to the original documentation (https://scanpy.readthedocs.io)
 
@@ -52,6 +53,10 @@ Scanpy was developed by the Theis laboratory for analyzing single cell RNA (scRN
 
 ## Sample data
 The folder sample data contains Chipcytometry data from an inflamed human colon biopsy shown in Figure 2 of the paper.
+
+## Input requirements for other imaging data
+* Stitched grayscale images for each channel (.tiff convertable)
+* All images need to be present in one folder to run the automatic analysis
 
 ## References
 1. Wolf, F., Angerer, P. & Theis, F. SCANPY: large-scale single-cell gene expression data analysis. Genome Biol 19, 15 (2018). https://doi.org/10.1186/s13059-017-1382-0
