@@ -61,5 +61,6 @@ The folder sample data contains Chipcytometry data from an inflamed human colon 
 ## References
 1. Wolf, F., Angerer, P. & Theis, F. SCANPY: large-scale single-cell gene expression data analysis. Genome Biol 19, 15 (2018). https://doi.org/10.1186/s13059-017-1382-0
 2. Schindelin, J., Arganda-Carreras, I., Frise, E. et al. Fiji: an open-source platform for biological-image analysis. Nat Methods 9, 676–682 (2012). https://doi.org/10.1038/nmeth.2019
+2. Schmidt, U., Weigert, M., Broaddus, C., Myers, G. Cell Detection with Star-convex Polygons. MICCAI (2018). https://doi.org/10.1007/978-3-030-00934-2_30
 3. Lin J-R, Izar B, Wang S, Yapp C, Mei S, Shah P, Santagata S, Sorger PK. Highly multiplexed immunofluorescence imaging of human tissues and tumors using t-CyCIF and conventional optical microscopes. eLife. 2018 Jul 11;7:e31657. https://doi.org/10.7554/eLife.31657 
 4. Jakub Nedbal. writeFCS(fname, DATA, TEXT, OTHER) (https://www.mathworks.com/matlabcentral/fileexchange/42603-writefcs-fname-data-text-other), MATLAB Central File Exchange. Retrieved June 24, 2020. 
