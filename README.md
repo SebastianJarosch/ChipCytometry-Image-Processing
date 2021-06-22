@@ -37,7 +37,7 @@ e) To save disk space, all "flimages" and "posref" folders can be deleted as wel
 *Depending on the size of a chip and the number of segmented cells, the spillover correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the input parameters first* <br><br>
 a) Run the script automatic_image_processing.ijm in ImageJ <br>
 b) Select channels and specify the parameters and press OK <br>
-c) If thresholding was selected as segmentation method: adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining<br>If 'pretrained NN' was selected, the pretrained model will be applied directly on your nuclei staining channel.
+c) If thresholding was selected as segmentation method: adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining. If 'pretrained NN' was selected, the pretrained model will be applied directly on your nuclei staining channel. <br>
 
 ### 3. Quality control
 a) Check the stitched images in Results/stitching to see if they are in a good quality for all sub-positions<br>
