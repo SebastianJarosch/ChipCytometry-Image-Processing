@@ -493,11 +493,13 @@ if (datatype=="ChipCytometry") {
 		//Run stitching Plugin from ImageJ with files generated in the folder
 		run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
 		"first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] "+
-		"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save memory (but be slower)] "+
-		"image_output=[Fuse and display]");
+		"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] "+
+		"image_output=[Write to disk]");
 		File.makeDirectory(pathraw+"Results");
+		open(pathraw+"img_t1_z1_c1");
 		saveAs("tiff", pathraw+"Results/"+folders[j]+".tiff");
 		close();
+		File.delete(pathraw+"img_t1_z1_c1");
 		Tstitching = Tstitching+((getTime-startT)/1000);
 	}
 	
@@ -745,7 +747,7 @@ if (segmentationstatus == true) {
 			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,50,2000,0.75);}
 			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all",3000,65535,50,2000,0.75);}
 	}else {
-			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all");}
+			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"Lamina_propria",3000,65535,70,400,0.55);}
 			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all");}
 	}
 	epithelialcellnumber=0;
@@ -1054,7 +1056,7 @@ if (segmentationstatus == 1) {
 	if (erys==true) {
 		print(erycellnumber+" heve been segmented in "+vesselcount+" vessels");
 	}
-	if (sepepithel == false) {print("Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
+	if (sepepithel == false && segmentationmethod == "thresholding") {print("Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
 	if (erys == true && sepepithel == false) {print("Number of Erythrocytes: "+erycellnumber+"; Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
 	print("Time for cell recognition: "+Tsegmentation+" s");
 }
