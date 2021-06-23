@@ -1005,7 +1005,7 @@ if (inconsistant == true || emptypositions==true){
 if (datatype=="Chipcytometry") {
 	print("Size of the stiched image: "+xsize+" x "+ysize);
 	print("Number of the first image: "+firsttile);
-	print("Number of positions to be stitched: "+(xsize*ysize));
+	print("Number of positions to be stitched: "+((xsize*ysize)-(firsttile-1)));
 	print("Time for generating empty positions: "+Tempty+" s");
 	print("Time for renaming positions: "+Trenaming+" s");
 }
@@ -1217,7 +1217,7 @@ function segmentation_stardist(ensize, filename) {
 	//Let the user adjust the default threshold for the nuclei
 	open(finalimages+"segmentation/"+filename+".tiff");
 	selectWindow(filename+".tiff");
-	run("Command From Macro", "command=[de.csbdresden.stardist.StarDist2D], args=['input':"+filename+".tiff, 'modelChoice':'Versatile (fluorescent nuclei)', 'normalizeInput':'true', 'percentileBottom':'1.0', 'percentileTop':'99.8', 'probThresh':'0.6499999999999999', 'nmsThresh':'0.3', 'outputType':'Both', 'nTiles':'1', 'excludeBoundary':'2', 'roiPosition':'Automatic', 'verbose':'true', 'showCsbdeepProgress':'false', 'showProbAndDist':'false'], process=[false]");
+	run("Command From Macro", "command=[de.csbdresden.stardist.StarDist2D], args=['input':"+filename+".tiff, 'modelChoice':'Versatile (fluorescent nuclei)', 'normalizeInput':'true', 'percentileBottom':'1.0', 'percentileTop':'99.8', 'probThresh':'0.6499999999999999', 'nmsThresh':'0.3', 'outputType':'ROI Manager', 'nTiles':'"+((xsize*ysize)-(firsttile-1))+"', 'excludeBoundary':'2', 'roiPosition':'Automatic', 'verbose':'true', 'showCsbdeepProgress':'false', 'showProbAndDist':'false'], process=[false]");
 	print("Particles analyzed for "+filename);
 	print ("Time for cell recognition ="+(getTime-startT)/1000+"s");
 	
