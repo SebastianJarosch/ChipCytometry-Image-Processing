@@ -261,7 +261,7 @@ if (fish_marker[lengthOf(fish)-1]==1){
 	minFishInt=Dialog.getNumber();
 }
 error_cells=newArray();
-
+emptypositions = false;
 inconsistant = false;
 
 
@@ -274,7 +274,6 @@ if (datatype=="Chipcytometry") {
 	}
 	
 	positions = newArray();
-	emptypositions = false;
 	for (i = 0; i < markernumber_total; i++) {
 		
 		filelist = getFileList(pathraw+folders[i]);
