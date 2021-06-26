@@ -243,7 +243,8 @@ minimum_correction=Dialog.getCheckbox();
 minimum_radius=Dialog.getNumber();
 subtract_BG=Dialog.getCheckbox();
 rolling_radius=Dialog.getNumber();
-if (datatype=="Chipcytometry") {checkconsistancy=Dialog.getCheckbox();}
+if (datatype=="Chipcytometry") {checkconsistancy=Dialog.getCheckbox();
+}
 
 //The following options are only displayed, if the tissue type is not single cells
 if (tissue!="cells"){
@@ -282,7 +283,8 @@ if (datatype=="Chipcytometry") {
 			subdir=getFileList(pathraw+folders[i]+"/"+filelist[j]);
 			if (lengthOf(subdir)!=0){
 				subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
-			}else{
+			}
+else{
 				subsubdir=newArray();
 			}
 			if (lengthOf(subsubdir)==0) {
@@ -518,7 +520,8 @@ if (datatype=="ChipCytometry") {
 			print("\\Update:Image "+i+" deleted");
 		}
 	}
-}else {
+}
+else {
 	File.makeDirectory(pathraw+"Results");
 	for (j = 0; j < markernumber_total; j++) {
 		setBatchMode(true);
@@ -559,7 +562,8 @@ if (erys==true){
 		save(pathraw+"Results/"+ery_channel+".tiff");
 		run("Close All");
 		print("Erythrocyte detection finished...");
-	}else {
+	}
+else {
 		print("No vessels detected...");
 		erys=false;
 	}
@@ -744,10 +748,12 @@ if (segmentationstatus == true) {
 	saveAs("tiff", finalimages+"segmentation/all.tiff");
 	run("Close All");
 	if (tissue=="cells") {
-			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,50,2000,0.75);}
+			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,50,2000,0.75);
+}
 			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all",3000,65535,50,2000,0.75);}
 	}else {
-			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"Lamina_propria",3000,65535,70,400,0.55);}
+			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);
+}
 			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all");}
 	}
 	epithelialcellnumber=0;
