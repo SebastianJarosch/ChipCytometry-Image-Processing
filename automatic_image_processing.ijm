@@ -747,12 +747,10 @@ if (segmentationstatus == true) {
 	saveAs("tiff", finalimages+"segmentation/all.tiff");
 	run("Close All");
 	if (tissue=="cells") {
-			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,50,2000,0.75);
-}
-			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all",3000,65535,50,2000,0.75);}
+			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,50,2000,0.75);}
+			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all");}
 	}else {
-			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);
-}
+			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);}
 			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all");}
 	}
 	epithelialcellnumber=0;
