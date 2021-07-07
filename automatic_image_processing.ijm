@@ -526,7 +526,8 @@ else {
 		setBatchMode(true);
 		open(pathraw+folders_original[j]);
 		run("16-bit");
-		saveAs("Tiff", pathraw+"Results/"+folders_original[j]);
+		name=split(folders_original[j], ".");
+		saveAs("Tiff", pathraw+"Results/"+name[0]+".tiff");
 		close();
 	}
 }
@@ -1220,7 +1221,9 @@ function segmentation_stardist(ensize, filename) {
 	//Let the user adjust the default threshold for the nuclei
 	open(finalimages+"segmentation/"+filename+".tiff");
 	selectWindow(filename+".tiff");
-	run("Command From Macro", "command=[de.csbdresden.stardist.StarDist2D], args=['input':"+filename+".tiff, 'modelChoice':'Versatile (fluorescent nuclei)', 'normalizeInput':'true', 'percentileBottom':'1.0', 'percentileTop':'99.8', 'probThresh':'0.6499999999999999', 'nmsThresh':'0.3', 'outputType':'ROI Manager', 'nTiles':'"+((xsize*ysize)-(firsttile-1))+"', 'excludeBoundary':'2', 'roiPosition':'Automatic', 'verbose':'true', 'showCsbdeepProgress':'false', 'showProbAndDist':'false'], process=[false]");
+	if (datatype=="Chipcytometry") {ntiles=((xsize*ysize)-(firsttile-1));}
+	if (datatype=="stitched images") {ntiles=((round(getWidth()/1392)+1)*(round(getHeight()/1040)+1));}
+	run("Command From Macro", "command=[de.csbdresden.stardist.StarDist2D], args=['input':"+filename+".tiff, 'modelChoice':'Versatile (fluorescent nuclei)', 'normalizeInput':'true', 'percentileBottom':'1.0', 'percentileTop':'99.8', 'probThresh':'0.6499999999999999', 'nmsThresh':'0.3', 'outputType':'ROI Manager', 'nTiles':'"+ntiles+"', 'excludeBoundary':'2', 'roiPosition':'Automatic', 'verbose':'true', 'showCsbdeepProgress':'false', 'showProbAndDist':'false'], process=[false]");
 	print("Particles analyzed for "+filename);
 	print ("Time for cell recognition ="+(getTime-startT)/1000+"s");
 	
