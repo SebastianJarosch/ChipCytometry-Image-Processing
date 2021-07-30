@@ -495,7 +495,7 @@ if (datatype=="ChipCytometry") {
 		run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
 		"first_file_index_i=firsttile directory=&pathraw file_names={iii}.tif output_textfile_name=TileConfiguration.txt fusion_method=[Linear Blending] "+
 		"regression_threshold=0.30 max/avg_displacement_threshold=2.50 absolute_displacement_threshold=3.50 computation_parameters=[Save computation time (but use more RAM)] "+
-		"image_output=[Write to disk]");
+		"image_output=[Write to disk] output_directory=["+pathraw+"]");
 		File.makeDirectory(pathraw+"Results");
 		open(pathraw+"img_t1_z1_c1");
 		saveAs("tiff", pathraw+"Results/"+folders[j]+".tiff");
