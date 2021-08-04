@@ -53,6 +53,8 @@ if (datatype=="Chipcytometry") {
 	Dialog.addNumber("grid size y", 4);
 	Dialog.addNumber("first tile", 1);
 	Dialog.setInsets(10, 0, 0);
+	Dialog.addCheckbox("Shading correction", false)
+	Dialog.setInsets(10, 0, 0);
 	Dialog.addCheckbox("Clean folder", false)
 	Dialog.setInsets(0, 0, 0);
 	highlight_message("This will delete all files except","i");
@@ -63,7 +65,8 @@ if (datatype=="Chipcytometry") {
 }
 Dialog.addHelp("<html><b>Chip & tissue properties</b><br>The selection of the tissue type will affect the default values for some parameters, like the enlargement of ROIs "+
 "which is reduced in denser tissues to avoid spillover from neighboring cells.<br><br><b>Size of the tissue section</b><br>The size in tiles can be evaluated from the Cell Explorer App by looking at the overview image. "+
-"the y size needs to be specified starting from the first tile.<br><br><b>Clean folder</b><br>Deletes the folders <cite>posref</cite>, <cite>flimages</cite>, as well as the <cite>.blob32, .xml, .png</cite> and <cite>.csv</cite> files. "+
+"the y size needs to be specified starting from the first tile.<br><br><b>Shading correction</b><br>Correct shading of the individual tiles derived from scanning microscopy. For this option, the BaSIC plugin "+
+"must be installed (Check imageJ upgrade sites!).<br><br><b>Clean folder</b><br>Deletes the folders <cite>posref</cite>, <cite>flimages</cite>, as well as the <cite>.blob32, .xml, .png</cite> and <cite>.csv</cite> files. "+
 "The only files remaining are the .tiff files in the HDRFL folders for each position.<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
@@ -76,14 +79,16 @@ if (datatype=="Chipcytometry") {
 	xsize=Dialog.getNumber();
 	ysize=Dialog.getNumber();
 	firsttile=Dialog.getNumber();
+	correct_shading=Dialog.getCheckbox();
 	clean=Dialog.getCheckbox();
 }
 print("Chip "+ChipID+" contains "+organism+" "+tissue+" tissue");
 
 if (clean==true) {
 	var total_filelist=newArray();
-	pattern_ending = ".tiff";
-	deleteFiles(pathraw, pattern_ending, true); 
+	pattern_ending_1 = ".tiff";
+	pattern_ending_2 = ".png";
+	deleteFiles(pathraw, pattern_ending_1, pattern_ending_2, true); 
 }
 
 //Dialog for selection of markers to be analyzed
@@ -402,7 +407,6 @@ selectWindow("Log");
 saveAs("Text", pathraw+"channels.csv"); 
 
 //Initialize time values
-Tempty = 0;
 Trenaming = 0;
 Tstitching = 0;
 Tsegmentation = 0;
@@ -425,29 +429,8 @@ if (datatype=="ChipCytometry") {
 	
 	//generate black images for stitching which cover the whole area
 	setBatchMode(true);
-	for (i = firsttile; i <= totalpositions; i++) {
-		if (i<10) {
-			newImage(i, "16-bit black", 1392, 1040, 1);
-			run("16-bit");
-			saveAs("Tiff", pathraw+"00"+i);
-			close();
-		}		
-		if (i<100 && i>9 ){
-			newImage(i, "16-bit black", 1392, 1040, 1);
-			run("16-bit");
-			saveAs("Tiff", pathraw+"0"+i);
-			close();
-		}
-		if (i<1000 && i>99 ){
-			newImage(i, "16-bit black", 1392, 1040, 1);
-			run("16-bit");
-			saveAs("Tiff", pathraw+i);
-			close();
-		}
-		print("\\Update: Framework images generated successfully: "+i);
-	}
-	print ("processing time empty positions ="+(getTime-startT)/1000+"s");
-	Tempty = Tempty+((getTime-startT)/1000);
+
+
 	startT = getTime;
 	
 	//get files from folder and rename according to their directory
@@ -455,6 +438,69 @@ if (datatype=="ChipCytometry") {
 		setBatchMode(true);
 		print(folders[j]);
 		print("");
+		
+		//perform BaSIC correction
+		if (correct_shading==true){
+			File.makeDirectory(pathraw+"BaSIC_correction");
+			for (i = firsttile; i <= totalpositions; i++) {
+				if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/LDRFL.tiff")) {
+					open(pathraw+folders[j]+"/pos0"+i+"/hdr/LDRFL.png");
+					run("16-bit");
+					saveAs("Tiff", pathraw+"BaSIC_correction/"+"00"+i);
+					close();
+					print("\\Update: Shading image generated successfully: "+i);
+				}
+				if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.tiff")) {
+					open(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.png");
+					run("16-bit");
+					saveAs("Tiff", pathraw+"BaSIC_correction/"+"0"+i);
+					close();
+					print("\\Update: Shading image generated successfully: "+i);
+				}
+				if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.tiff")) {
+					open(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.png");
+					run("16-bit");
+					saveAs("Tiff", pathraw+"BaSIC_correction/"+i);
+					close();
+					print("\\Update: Shading image generated successfully: "+i);
+				}						
+			}
+			run("Image Sequence...", "open="+pathraw+"/BaSIC_correction");
+			stackname=getTitle();
+			run("BaSiC ", "processing_stack="+stackname+" flat-field=None dark-field=None shading_estimation=[Estimate shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading only] lambda_flat=0.50 lambda_dark=0.50");
+			saveAs("Tiff", pathraw+"BaSIC_correction/shading_image");
+			run("Close All");
+		}
+
+
+
+		
+		startT=getTime;
+		for (i = firsttile; i <= totalpositions; i++) {
+			if (i<10) {
+				newImage(i, "16-bit black", 1392, 1040, 1);
+				run("16-bit");
+				saveAs("Tiff", pathraw+"00"+i);
+				close();
+			}		
+			if (i<100 && i>9 ){
+				newImage(i, "16-bit black", 1392, 1040, 1);
+				run("16-bit");
+				saveAs("Tiff", pathraw+"0"+i);
+				close();
+			}
+			if (i<1000 && i>99 ){
+				newImage(i, "16-bit black", 1392, 1040, 1);
+				run("16-bit");
+				saveAs("Tiff", pathraw+i);
+				close();
+			}
+			print("\\Update: Framework images generated successfully: "+i);
+		}
+		print ("processing time empty positions ="+(getTime-startT)/1000+"s");
+
+
+		
 		for (i = firsttile; i <= totalpositions; i++) {
 			if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
 				open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
@@ -484,12 +530,19 @@ if (datatype=="ChipCytometry") {
 		run("Image Sequence...", "open=pathraw");
 		stackname=getTitle();
 		windowname=stackname;
+		if (correct_shading==true){
+			open(pathraw+"BaSIC_correction/shading_image.tif");
+			run("BaSiC ", "processing_stack="+windowname+" flat-field=shading_image.tif dark-field=None shading_estimation=[Skip estimation and use predefined shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading and correct images] lambda_flat=0.50 lambda_dark=0.50");
+			windowname=getTitle();		
+		}
 		selectWindow(windowname);
 		run("Image Sequence... ", "format=TIFF use save=pathraw");
 		close();
 		print("Images saved");
 		Trenaming = Trenaming+((getTime-startT)/1000);
 		startT = getTime;
+
+		
 		
 		//Run stitching Plugin from ImageJ with files generated in the folder
 		run("Grid/Collection stitching", "type=[Grid: row-by-row] order=[Left & Down] grid_size_x=xsize grid_size_y=ysize tile_overlap_x=3 tile_overlap_y=0 "+
@@ -983,6 +1036,14 @@ File.rename(finalimages+"Erythrocytes.tiff",finalimages+"stitching/Erythrocytes.
 File.rename(pathraw+"merge.tiff",finalimages+"stitching/merge.tiff");
 File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileConfiguration.txt");
 File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv");
+if (correct_shading==true){
+	listFiles(pathraw+"BaSIC_correction/");
+	Array.print(total_filelist);
+	for (i = 0; i < total_filelist.length; i++) {
+		File.delete(total_filelist[i]);
+	}
+	File.delete(pathraw+"BaSIC_correction");
+}
 
 
 //Save error generating cells if the appear
@@ -1010,7 +1071,7 @@ if (datatype=="Chipcytometry") {
 	print("Size of the stiched image: "+xsize+" x "+ysize);
 	print("Number of the first image: "+firsttile);
 	print("Number of positions to be stitched: "+((xsize*ysize)-(firsttile-1)));
-	print("Time for generating empty positions: "+Tempty+" s");
+	if (correct_shading==true){print("Shading correction was performed for all channels");}
 	print("Time for renaming positions: "+Trenaming+" s");
 }
 print("Markers analyzed: "+markernumber_total);
@@ -1271,10 +1332,10 @@ function listFiles(dir) {
 	}
 }
 
-function deleteFiles(dir, ending, parent){
+function deleteFiles(dir, ending1, ending2, parent){
 	listFiles(dir);
 	for (i = 0; i < total_filelist.length; i++) {
-		if (!endsWith(total_filelist[i],".tiff")) {
+		if ((!endsWith(total_filelist[i],ending1)) && (!endsWith(total_filelist[i],ending2))) {
 			print("\\Update:Deleting "+total_filelist[i]);
 			File.delete(total_filelist[i]);
 			if (parent==true) {
