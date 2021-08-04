@@ -31,7 +31,7 @@ a) Adjust background and contrast value in Zellkraftwerk app in order to get the
 b) Export images for each channel in the Zellkraftwerk app as 16-bit grayscale tiff images.<br>
 c) Copy the Scanjob folders located in *Chipfolder/scanjobs/* for each channel in a new directory named with the chip ID. This directory will be the basis for the imageJ script. <b> The script should not be run on the original imaging files in order to avoid any data loss! </b> <br>
 d) Rename the scanjob folders with their corresponding epitope names <br>
-e) To save disk space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br> This cleanup procedure can be automated with the ImageJ plugin as well.
+e) To save disk space, all files except .tiff and .png files can be deleted from the folder since only the .tiff images are needed for the analysis and .png files can be used for shading correction<br> This cleanup procedure can be automated with the ImageJ plugin as well.
 
 #### Requirements for image data from other platforms
 Images need to be stitched together resulting in one **grayscale TIFF-Image** per channel. All of these images need to be stored in the same directory, which is then selected while running the script. Make sure, that you select "stitched images" as input type in the first popup window.
