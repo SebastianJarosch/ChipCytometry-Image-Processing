@@ -66,7 +66,7 @@ if (datatype=="Chipcytometry") {
 Dialog.addHelp("<html><b>Chip & tissue properties</b><br>The selection of the tissue type will affect the default values for some parameters, like the enlargement of ROIs "+
 "which is reduced in denser tissues to avoid spillover from neighboring cells.<br><br><b>Size of the tissue section</b><br>The size in tiles can be evaluated from the Cell Explorer App by looking at the overview image. "+
 "the y size needs to be specified starting from the first tile.<br><br><b>Shading correction</b><br>Correct shading of the individual tiles derived from scanning microscopy. For this option, the BaSIC plugin "+
-"must be installed (Check imageJ upgrade sites!).<br><br><b>Clean folder</b><br>Deletes the folders <cite>posref</cite>, <cite>flimages</cite>, as well as the <cite>.blob32, .xml, .png</cite> and <cite>.csv</cite> files. "+
+"the y size needs to be specified starting from the first tile.<br><br><b>Clean folder</b><br>Deletes the folders <cite>posref</cite>, <cite>flimages</cite>, as well as the <cite>.blob32, .xml, .png</cite> and <cite>.csv</cite> files. "+
 "The only files remaining are the .tiff files in the HDRFL folders for each position.<br><br><b>For additional information, refer to the documentation</b><br><a href>https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/README.md</a></html>");
 Dialog.show();
 
@@ -443,21 +443,21 @@ if (datatype=="ChipCytometry") {
 		if (correct_shading==true){
 			File.makeDirectory(pathraw+"BaSIC_correction");
 			for (i = firsttile; i <= totalpositions; i++) {
-				if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/LDRFL.tiff")) {
+				if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/LDRFL.png")) {
 					open(pathraw+folders[j]+"/pos0"+i+"/hdr/LDRFL.png");
 					run("16-bit");
 					saveAs("Tiff", pathraw+"BaSIC_correction/"+"00"+i);
 					close();
 					print("\\Update: Shading image generated successfully: "+i);
 				}
-				if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.tiff")) {
+				if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.png")) {
 					open(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.png");
 					run("16-bit");
 					saveAs("Tiff", pathraw+"BaSIC_correction/"+"0"+i);
 					close();
 					print("\\Update: Shading image generated successfully: "+i);
 				}
-				if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.tiff")) {
+				if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.png")) {
 					open(pathraw+folders[j]+"/pos"+i+"/hdr/LDRFL.png");
 					run("16-bit");
 					saveAs("Tiff", pathraw+"BaSIC_correction/"+i);
