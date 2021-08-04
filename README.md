@@ -33,6 +33,9 @@ c) Copy the Scanjob folders located in *Chipfolder/scanjobs/* for each channel i
 d) Rename the scanjob folders with their corresponding epitope names <br>
 e) To save disk space, all "flimages" and "posref" folders can be deleted as well as all .xml, .blob32 and .png files from the folder since only the .tiff images are needed for the analysis <br> This cleanup procedure can be automated with the ImageJ plugin as well.
 
+#### Requirements for image data from other platforms
+Images need to be stitched together resulting in one **grayscale TIFF-Image** per channel. All of these images need to be stored in the same directory, which is then selected while running the script. Make sure, that you select "stitched images" as input type in the first popup window.
+
 ### 2. Data generation in ImageJ
 *Depending on the size of a chip and the number of segmented cells, the spillover correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the input parameters first* <br><br>
 a) Run the script automatic_image_processing.ijm in ImageJ <br>
