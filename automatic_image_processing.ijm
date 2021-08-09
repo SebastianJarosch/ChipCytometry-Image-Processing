@@ -59,9 +59,9 @@ if (datatype=="Chipcytometry") {
 	Dialog.setInsets(0, 0, 0);
 	highlight_message("This will delete all files except","i");
 	Dialog.setInsets(0, 0, 0);
-	highlight_message("of the .tiff files needed for the","i");
+	highlight_message("of the .tiff and .png files needed","i");
 	Dialog.setInsets(0, 0, 0);
-	highlight_message("analysis to save disk space.","i");
+	highlight_message("for the analysis to save disk space.","i");
 }
 Dialog.addHelp("<html><b>Chip & tissue properties</b><br>The selection of the tissue type will affect the default values for some parameters, like the enlargement of ROIs "+
 "which is reduced in denser tissues to avoid spillover from neighboring cells.<br><br><b>Size of the tissue section</b><br>The size in tiles can be evaluated from the Cell Explorer App by looking at the overview image. "+
@@ -1282,7 +1282,7 @@ function segmentation_stardist(ensize, filename) {
 	//Let the user adjust the default threshold for the nuclei
 	open(finalimages+"segmentation/"+filename+".tiff");
 	selectWindow(filename+".tiff");
-	if (datatype=="Chipcytometry") {ntiles=((xsize*ysize)-(firsttile-1));}
+	if (datatype=="Chipcytometry") {ntiles=(xsize*ysize);}
 	if (datatype=="stitched images") {ntiles=((round(getWidth()/1392)+1)*(round(getHeight()/1040)+1));}
 	run("Command From Macro", "command=[de.csbdresden.stardist.StarDist2D], args=['input':"+filename+".tiff, 'modelChoice':'Versatile (fluorescent nuclei)', 'normalizeInput':'true', 'percentileBottom':'1.0', 'percentileTop':'99.8', 'probThresh':'0.6499999999999999', 'nmsThresh':'0.3', 'outputType':'ROI Manager', 'nTiles':'"+ntiles+"', 'excludeBoundary':'2', 'roiPosition':'Automatic', 'verbose':'true', 'showCsbdeepProgress':'false', 'showProbAndDist':'false'], process=[false]");
 	print("Particles analyzed for "+filename);
