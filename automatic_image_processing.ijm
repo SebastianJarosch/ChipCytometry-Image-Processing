@@ -75,6 +75,7 @@ ChipID=Dialog.getString();
 organism=Dialog.getChoice();
 tissue=Dialog.getChoice();
 clean=false;
+correct_shading=false;
 if (datatype=="Chipcytometry") {
 	xsize=Dialog.getNumber();
 	ysize=Dialog.getNumber();
@@ -203,9 +204,10 @@ if (tissue!="cells"){
 	Dialog.addNumber("Threshold", 60, 0, 4, "%");
 	Dialog.addNumber("Min intensity", 100, 0, 4, "");
 }
-fish_marker=Array.sort(fish);
+fish_sorted=Array.copy(fish);
+fish_marker=Array.sort(fish_sorted);
 Dialog.setInsets(15, 0, 0);
-if (fish_marker[lengthOf(fish)-1]==1){
+if (fish_marker[lengthOf(fish_sorted)-1]==1){
 	Dialog.addNumber(highlight_string("FISH marker threshold ","b"),500,0,4,"");
 }
 Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detected from a early PerCP Background channel and will be segmented for quantification as well. "+
