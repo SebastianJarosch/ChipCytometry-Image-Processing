@@ -13,9 +13,10 @@ The analysis pipeline was developed for ChipCytometry data but usage with every 
   * *Python 3.7+ for clustering and neighborhood analysis* <br>
 
 
-## Third party packages, plugins and scripts
+## Optional third party packages, plugins and scripts
 * Scanpy (https://github.com/theislab/scanpy) <br>
 * writeFCS (https://www.mathworks.com/matlabcentral/fileexchange/42603-writefcs-fname-data-text-other)
+* BaSIC (https://github.com/marrlab/BaSiC)
 
 ## Getting started
 * Install Fiji
