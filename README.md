@@ -41,12 +41,12 @@ Images need to be stitched together resulting in one **grayscale TIFF-Image** pe
 ### 2. Data generation in ImageJ
 *Depending on the size of a chip and the number of segmented cells, the spillover correction can take up to 24 hours, so make sure that all parameters have been adjusted precisely and perform a test run without correction to check the input parameters first* <br><br>
 a) Run the script automatic_image_processing.ijm in ImageJ <br>
-b) If shading correction was selected, the single tiles will be corrected based on the FL images (non BG subtracted LDRFL.png). This step has to be monitored carefully in order to avoid any computation-derived artifacts. <br>
-![Shading correction image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/shading.jpg) <br>
-c) Select channels and specify the parameters and press OK <br>
-![Options image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/options.jpg) <br>
-d) If thresholding was selected as segmentation method: adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining. If 'pretrained NN' was selected, the pretrained model will be applied directly on your nuclei staining channel. <br>
-![Segmentation image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/segmentation.jpg) <br>
+b) If shading correction was selected, the single tiles will be corrected based on the FL images (non BG subtracted LDRFL.png). This step has to be monitored carefully in order to avoid any computation-derived artifacts. <br><br>
+![Shading correction image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/shading.jpg) <br><br>
+c) Select channels and specify the parameters and press OK <br><br>
+![Options image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/options.jpg) <br><br>
+d) If thresholding was selected as segmentation method: adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining. If 'pretrained NN' was selected, the pretrained model will be applied directly on your nuclei staining channel. <br><br>
+![Segmentation image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/segmentation.jpg) <br><br>
 
 ### 3. Quality control
 a) Check the stitched images in Results/stitching to see if they are in a good quality for all sub-positions<br>
