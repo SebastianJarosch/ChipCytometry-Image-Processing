@@ -43,7 +43,7 @@ Images need to be stitched together resulting in one **grayscale TIFF-Image** pe
 a) Run the script automatic_image_processing.ijm in ImageJ <br>
 b) If shading correction was selected, the single tiles will be corrected based on the FL images (non BG subtracted LDRFL.png). This step has to be monitored carefully in order to avoid any computation-derived artifacts. <br><br>
 ![Shading correction image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/shading.jpg) <br><br>
-c) Select channels and specify the parameters and press OK <br><br>
+c) Select channels and specify the parameters and press OK. Detailed description of all the different parameters can be found via the help button in the corresponding window. <br><br>
 ![Options image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/options.jpg) <br><br>
 d) If thresholding was selected as segmentation method: adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining. If 'pretrained NN' was selected, the pretrained model will be applied directly on your nuclei staining channel. *Segmentation via the pretrained NN leads to a better segmentation efficiency but is therefore also more prone to oversegmentation* <br><br>
 ![Segmentation image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/segmentation.jpg) <br>
