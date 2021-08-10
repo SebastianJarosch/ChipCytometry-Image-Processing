@@ -46,7 +46,7 @@ b) If shading correction was selected, the single tiles will be corrected based 
 c) Select channels and specify the parameters and press OK <br><br>
 ![Options image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/options.jpg) <br><br>
 d) If thresholding was selected as segmentation method: adjust the **lower threshold** when you are asked to, in order to adjust the segmentation to your DNA staining. If 'pretrained NN' was selected, the pretrained model will be applied directly on your nuclei staining channel. *Segmentation via the pretrained NN leads to a better segmentation efficiency but is therefore also more prone to oversegmentation* <br><br>
-![Segmentation image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/segmentation.jpg) <br><br>
+![Segmentation image](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/segmentation.jpg) <br>
 
 ### 3. Quality control
 a) Check the stitched images in Results/stitching to see if they are in a good quality for all sub-positions<br>
