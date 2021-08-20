@@ -203,6 +203,7 @@ if (tissue!="cells"){
 	Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
 	Dialog.addNumber("Threshold", 60, 0, 4, "%");
 	Dialog.addNumber("Min intensity", 100, 0, 4, "");
+	Dialog.addCheckbox("Save corrected ROIs and images", false);
 }
 fish_sorted=Array.copy(fish);
 fish_marker=Array.sort(fish_sorted);
@@ -259,6 +260,7 @@ if (tissue!="cells"){
 	spillovercorrection=Dialog.getCheckbox();
 	distribution_threshold=Dialog.getNumber();
 	minCorrInt=Dialog.getNumber();
+	save_spillovercorrected=Dialog.getCheckbox();
 	distribution_threshold=distribution_threshold/25;
 }else {
 	tissue_size=false;
@@ -744,7 +746,6 @@ if (segmentationstatus == true) {
 		
 		//Enlarge crypts by 5 pixel and combine to one ROI
 		counts=roiManager("count");
-		print(counts);
 		print("");
 		if (counts<=1){
 			exit("No crypts detected, please check your cytokeratine channel");
@@ -948,11 +949,13 @@ if (segmentationstatus == true) {
 									for (l = 0; l < 4; l++) {
 										if(parseFloat(percentages[l])>distribution_threshold){
 											roiManager("select",cell);
-											run("Copy");
-											run("Internal Clipboard");
-											selectWindow("Clipboard");
-											saveAs("Tiff", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.tiff");
-											close();
+											if(save_spillovercorrected==true){
+												run("Copy");
+												run("Internal Clipboard");
+												selectWindow("Clipboard");
+												saveAs("Tiff", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.tiff");
+												close();
+											}
 											setBackgroundColor(0, 0, 0);
 											run("Clear", "slice");
 											roiManager("Save", finalimages+"segmentation/spatial_spillover_correction/"+slicename+"_excluded/"+(k+1)+"-excluded.roi");
