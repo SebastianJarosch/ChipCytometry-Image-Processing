@@ -292,7 +292,7 @@ if (datatype=="Chipcytometry") {
 			if (lengthOf(subdir)!=0){
 				subsubdir=getFileList(pathraw+folders[i]+"/"+filelist[j]+subdir[0]);
 			}
-else{
+			else{
 				subsubdir=newArray();
 			}
 			if (lengthOf(subsubdir)==0) {
