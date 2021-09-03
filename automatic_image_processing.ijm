@@ -1075,7 +1075,7 @@ if (inconsistant == true || emptypositions==true){
 if (datatype=="Chipcytometry") {
 	print("Size of the stiched image: "+xsize+" x "+ysize);
 	print("Number of the first image: "+firsttile);
-	print("Number of positions to be stitched: "+((xsize*ysize)-(firsttile-1)));
+	print("Number of positions to be stitched: "+(xsize*ysize));
 	if (correct_shading==true){print("Shading correction was performed for all channels");}
 	print("Time for renaming positions: "+Trenaming+" s");
 }
