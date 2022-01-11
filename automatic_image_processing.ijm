@@ -15,7 +15,8 @@ datatype=Dialog.getChoice();
 
 //choose the directory where the raw images are stored and try to catch the ChipID
 pathraw=getDirectory("Choose the directory for raw data");
-ChipID=substring(pathraw, lengthOf(pathraw)-8, lengthOf(pathraw)-1);
+strings=split(pathraw, '\\');
+ChipID=strings[strings.length-1];
 if (datatype!="Chipcytometry") {ChipID="ChipID";}
 
 //get the markers which are present in the subfolder of the path with rawdata
@@ -1043,7 +1044,7 @@ File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileCon
 File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv");
 
 if (correct_shading==true){
-	var total_filelist=newArray()
+	var total_filelist=newArray();
 	listFiles(pathraw+"BaSIC_correction/");
 	Array.print(total_filelist);
 	for (i = 0; i < total_filelist.length; i++) {
