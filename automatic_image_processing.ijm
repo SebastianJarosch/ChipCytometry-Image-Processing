@@ -1041,7 +1041,9 @@ File.rename(finalimages+"Erythrocytes.tiff",finalimages+"stitching/Erythrocytes.
 File.rename(pathraw+"merge.tiff",finalimages+"stitching/merge.tiff");
 File.rename(pathraw+"TileConfiguration.txt", pathraw+"/Results/stitching/TileConfiguration.txt");
 File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv");
+
 if (correct_shading==true){
+	var total_filelist=newArray()
 	listFiles(pathraw+"BaSIC_correction/");
 	Array.print(total_filelist);
 	for (i = 0; i < total_filelist.length; i++) {
