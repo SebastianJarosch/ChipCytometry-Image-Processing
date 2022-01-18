@@ -6,7 +6,7 @@ The analysis pipeline was developed for ChipCytometry data but usage with every 
 
 ## System reqirements
 * 32 Gb RAM (or more, depending on the size of the tissue sample)
-* ImageJ 1.53c or higher <br>
+* ImageJ 1.53o or higher <br>
 * optional: <br>
   * *Matlab 2018b or higher* <br>
   * *Flow cytometry software for analyzing .fcs files* (e.g. FowJo)
