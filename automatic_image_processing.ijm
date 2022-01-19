@@ -1,6 +1,9 @@
 //Run script to enable y-Overlap in the stitching Plug-In
 //If you are running the script for the first time, you will be asked to restart imageJ
 eval("bsh", "plugin.Stitching_Grid.seperateOverlapY = true;");
+version=getVersion();
+requires("1.53o");
+run("Check Required Update Sites");
 
 //specify input format
 Dialog.create("Specify data input");
@@ -1074,7 +1077,6 @@ print("*************************************************************************
 print("Summary of automatic image processing");
 print("************************************************************************************");
 print("-----------------------general project information---------------------------");
-version=getVersion();
 print("ImageJ version: "+version);
 print("Tissue type on Chip "+ChipID+": "+organism+" "+tissue);
 if (tissue_size == true && tissue != "cells" && segmentationstatus == true){print("Area of the tissue: "+area+" pixel --> "+(area/4000000)+" mm2");}
