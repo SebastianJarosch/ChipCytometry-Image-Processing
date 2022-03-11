@@ -474,7 +474,7 @@ if (datatype=="ChipCytometry") {
 				}						
 			}
 			pathbasiccorrected=pathraw+"BaSIC_correction/";
-			run("Image Sequence...", "dir="+pathbasiccorrected+"sort use");
+			run("Image Sequence...", "dir=&pathbasiccorrected sort use");
 			stackname=getTitle();
 			run("BaSiC ", "processing_stack="+stackname+" flat-field=None dark-field=None shading_estimation=[Estimate shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading only] lambda_flat=0.50 lambda_dark=0.50");
 			saveAs("Tiff", pathraw+"BaSIC_correction/shading_image");
@@ -536,16 +536,16 @@ if (datatype=="ChipCytometry") {
 		print ("processing time renaming ="+(getTime-startT)/1000+"s");
 		
 		//Save image sequence to the stiching folder and overwrite corresponding black tiles
-		run("Image Sequence...", "dir="+pathraw+"sort use");
+		run("Image Sequence...", "dir=&pathraw sort use");
 		stackname=getTitle();
 		windowname=stackname;
 		if (correct_shading==true){
 			open(pathraw+"BaSIC_correction/shading_image.tif");
-			run("BaSiC ", "processing_stack="+windowname+" flat-field=shading_image.tif dark-field=None shading_estimation=[Skip estimation and use predefined shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading and correct images] lambda_flat=0.50 lambda_dark=0.50");
+			run("BaSiC ", "processing_stack=&windowname flat-field=shading_image.tif dark-field=None shading_estimation=[Skip estimation and use predefined shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading and correct images] lambda_flat=0.50 lambda_dark=0.50");
 			windowname=getTitle();		
 		}
 		selectWindow(windowname);
-		run("Image Sequence... ", "format=TIFF use save="+pathraw);
+		run("Image Sequence... ", "format=TIFF use save=&pathraw");
 		close();
 		print("Images saved");
 		Trenaming = Trenaming+((getTime-startT)/1000);
@@ -1029,7 +1029,7 @@ if (segmentationstatus == true) {
 		//Save the stitched images with the deleted signals for each marker
 		File.makeDirectory(finalimages+"stitching/spacialcorrected/");
 		pathspatialcorrected=finalimages+"stitching/spacialcorrected/";
-		run("Image Sequence... ", "format=TIFF use save="+pathspatialcorrected);
+		run("Image Sequence... ", "format=TIFF use save=&pathspatialcorrected");
 		selectWindow("Results");
 		saveAs("Results", finalimages+"segmentation/FL_values.csv");
 		run("Close");
