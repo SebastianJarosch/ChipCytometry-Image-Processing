@@ -169,7 +169,7 @@ Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Segmentation","b"), true);
 segmentation_methods=newArray("thresholding","pretrained NN");
 Dialog.setInsets(0, 0, 0);
-Dialog.addChoice("Segmentation_method", segmentation_methods, "thresholding");
+Dialog.addChoice("Segmentation_method", segmentation_methods, "pretrained NN");
 nuclei_names=newArray("Nuclei","DNA","Hoechst");
 Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Nuclei staining", folders, occurance_in_array(folders, nuclei_names));
@@ -205,7 +205,7 @@ if (tissue!="cells"){
 	Dialog.setInsets(15, 0, 0);
 	Dialog.addCheckbox(highlight_string("Measure tissue size","b"), true);
 	Dialog.setInsets(15, 0, 0);
-	Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), true);
+	Dialog.addCheckbox(highlight_string("Spatial spillover correction","b"), false);
 	Dialog.addNumber("Threshold", 60, 0, 4, "%");
 	Dialog.addNumber("Min intensity", 100, 0, 4, "");
 	Dialog.addCheckbox("Save corrected ROIs and images", false);
@@ -475,10 +475,12 @@ if (datatype=="ChipCytometry") {
 				}						
 			}
 			pathbasiccorrected=pathraw+"BaSIC_correction/";
-			run("Image Sequence...", "dir=&pathbasiccorrected sort use");
+			listofimages=getFileList(pathraw+"BaSIC_correction/");
+			count=listofimages.length-j;
+			run("Image Sequence...", "dir=&pathbasiccorrected sort use count=count");
 			stackname=getTitle();
 			run("BaSiC ", "processing_stack=&stackname flat-field=None dark-field=None shading_estimation=[Estimate shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading only] lambda_flat=0.50 lambda_dark=0.50");
-			saveAs("Tiff", pathraw+"BaSIC_correction/shading_image");
+			saveAs("Tiff", pathraw+"BaSIC_correction/shading_image_"+folders[j]);
 			run("Close All");
 		}
 
@@ -541,8 +543,8 @@ if (datatype=="ChipCytometry") {
 		stackname=getTitle();
 		windowname=stackname;
 		if (correct_shading==true){
-			open(pathraw+"BaSIC_correction/shading_image.tif");
-			run("BaSiC ", "processing_stack=&windowname flat-field=shading_image.tif dark-field=None shading_estimation=[Skip estimation and use predefined shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading and correct images] lambda_flat=0.50 lambda_dark=0.50");
+			open(pathraw+"BaSIC_correction/shading_image_"+folders[j]+".tif");
+			run("BaSiC ", "processing_stack=&windowname flat-field=shading_image_"+folders[j]+".tif dark-field=None shading_estimation=[Skip estimation and use predefined shading profiles] shading_model=[Estimate flat-field only (ignore dark-field)] setting_regularisationparametes=Automatic temporal_drift=Ignore correction_options=[Compute shading and correct images] lambda_flat=0.50 lambda_dark=0.50");
 			windowname=getTitle();		
 		}
 		selectWindow(windowname);
@@ -571,14 +573,17 @@ if (datatype=="ChipCytometry") {
 	for (i = firsttile; i <= totalpositions; i++) {
 		if (i<10) {
 			File.delete(pathraw+"00"+i+".tif");
+			if (correct_shading==true){File.delete(pathraw+"BaSIC_correction/00"+i+".tif");}
 			print("\\Update:Image 00"+i+" deleted");
 		}		
 		if (i<100 && i>9 ){
 			File.delete(pathraw+"0"+i+".tif");
+			if (correct_shading==true){File.delete(pathraw+"BaSIC_correction/0"+i+".tif");}
 			print("\\Update:Image 0"+i+" deleted");
 		}
 		if (i<1000 && i>99 ){
 			File.delete(pathraw+i+".tif");
+			if (correct_shading==true){File.delete(pathraw+"BaSIC_correction/"+i+".tif");}
 			print("\\Update:Image "+i+" deleted");
 		}
 	}
@@ -1028,9 +1033,9 @@ if (segmentationstatus == true) {
 		}
 
 		//Save the stitched images with the deleted signals for each marker
-		File.makeDirectory(finalimages+"stitching/spacialcorrected/");
-		pathspatialcorrected=finalimages+"stitching/spacialcorrected/";
-		run("Image Sequence... ", "format=TIFF use save=&pathspatialcorrected");
+		File.makeDirectory(finalimages+"stitching/processed/");
+		pathprocessed=finalimages+"stitching/processed/";
+		run("Image Sequence... ", "format=TIFF use save=&pathprocessed");
 		selectWindow("Results");
 		saveAs("Results", finalimages+"segmentation/FL_values.csv");
 		run("Close");
@@ -1052,15 +1057,18 @@ File.rename(pathraw+"channels.csv", pathraw+"/Results/segmentation/channels.csv"
 File.delete(pathraw+"channels.tif");
 
 if (correct_shading==true){
-	var total_filelist=newArray();
-	listFiles(pathraw+"BaSIC_correction/");
-	Array.print(total_filelist);
-	for (i = 0; i < total_filelist.length; i++) {
-		File.delete(total_filelist[i]);
+	File.makeDirectory(finalimages+"stitching/shading_correction/");
+	for (i = 0; i < markernumber_total; i++) {
+		File.rename(pathraw+"BaSIC_correction/shading_image_"+folders[i]+".tif",finalimages+"stitching/shading_correction/shading_image_"+folders[i]+".tif");
 	}
-	File.delete(pathraw+"BaSIC_correction");
+	File.delete(pathraw+"BaSIC_correction/");
 }
 
+if (valuecalculation==true){
+	for (i = 0; i < markernumber_total; i++) {
+		File.rename(finalimages+"stitching/processed/"+folders[i]+".tiff.tif",finalimages+"stitching/processed/"+folders[i]+"_processed.tif");
+	}
+}
 
 //Save error generating cells if the appear
 if(spillovercorrection==true && error_cells.length>0){
