@@ -18,7 +18,8 @@ datatype=Dialog.getChoice();
 
 //choose the directory where the raw images are stored and try to catch the ChipID
 pathraw=getDirectory("Choose the directory for raw data");
-strings=split(pathraw, '\\');
+if (getInfo("os.name")=="Mac OS X"){delimiter='/';}else {delimiter='\\';}
+strings=split(pathraw, delimiter);
 ChipID=strings[strings.length-1];
 if (datatype!="Chipcytometry") {ChipID="ChipID";}
 
@@ -57,7 +58,7 @@ if (datatype=="Chipcytometry") {
 	Dialog.addNumber("grid size y", 4);
 	Dialog.addNumber("first tile", 1);
 	Dialog.setInsets(10, 0, 0);
-	Dialog.addCheckbox("Shading correction", false)
+	Dialog.addCheckbox("Shading correction", true)
 	Dialog.setInsets(10, 0, 0);
 	Dialog.addCheckbox("Clean folder", false)
 	Dialog.setInsets(0, 0, 0);
@@ -156,7 +157,7 @@ folders=folders_new;
 //Create dialog with options for analysis
 Dialog.create("Specify analysis");
 Dialog.setInsets(0, 0, 0);
-Dialog.addCheckbox(highlight_string("Extract Erys from AF","b"), true);
+Dialog.addCheckbox(highlight_string("Extract Erys from AF","b"), false);
 choices=Array.concat(folders,"*None*");
 Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("BG channel", folders, occurance_in_array(folders, newArray("PerCP_BG","PerCP","BG","Erys","Erys_AF","*None*")));
