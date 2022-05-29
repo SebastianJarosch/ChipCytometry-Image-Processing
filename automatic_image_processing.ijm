@@ -167,9 +167,9 @@ Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Create merge image","b"), true);
 Dialog.setInsets(0, 0, 0);
 Dialog.addCheckbox(highlight_string("Segmentation","b"), true);
-segmentation_methods=newArray("thresholding","pretrained NN");
+segmentation_methods=newArray("thresholding","pre-trained NN");
 Dialog.setInsets(0, 0, 0);
-Dialog.addChoice("Segmentation_method", segmentation_methods, "pretrained NN");
+Dialog.addChoice("Segmentation_method", segmentation_methods, "pre-trained NN");
 nuclei_names=newArray("Nuclei","DNA","Hoechst");
 Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Nuclei staining", folders, occurance_in_array(folders, nuclei_names));
@@ -222,7 +222,7 @@ Dialog.addHelp("<html><b>Erythrocyte extraction</b><br>Erythrocytes can be detec
 "<b>Create merge image</b><br>To get an overview about the tissue architechture, up to 7 channels can be merged in this step. You will be asked to select them after the stitching is finished. "+
 "By default, Vimentin, SMA, Nuclei and Cytokeratin are selected here. Channels can be weighted by a factor where 1 means a default merge of the full-intensity image.<br><br>"+
 "<b>Segmentation</b><br>here you need to choose your segmentationmarker and the marker for epithelial cells, if you have selected a tissue type "+
-"containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><i>Pretrained NN requires stardist to be installed. "+
+"containing epithelial cells. In case no epithelial cell staining was performed, you can choose <cite>no staining</cite> and a one marker segmentation will be performed.<br><i>pre-trained NN requires stardist to be installed. "+
 "See documenation under the following link: <a href>https://github.com/stardist/stardist-imagej/</a><br><br>"+
 "<b>FL-value calculation</b><br>Here specific parameters can be adjusted for preprocessing surface-Marker images. The default values have been tested and titrated, so they "+
 "resemble a good starting point.<br><br><b>Marker consistancy check</b><br>This checks, if images are available for all positions in all markers. If this is not the case, you can "+
@@ -802,7 +802,7 @@ if (segmentationstatus == true) {
 			epithelialcellnumber=segmentation(ensize,true,"Epithel",7000,65535,75,2000,0.2);
 			LPcellnumber=segmentation(ensize,true,"Lamina_propria",3000,65535,70,400,0.55);
 		}
-		if (segmentationmethod == "pretrained NN"){
+		if (segmentationmethod == "pre-trained NN"){
 			epithelialcellnumber=segmentation_stardist(ensize,"Epithel");
 			LPcellnumber=segmentation_stardist(ensize,"Lamina_propria");
 		}
@@ -817,11 +817,11 @@ if (segmentationstatus == true) {
 	if (tissue=="cells") {
 			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,50,2000,0.75);
 }
-			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all");}
+			if (segmentationmethod == "pre-trained NN"){cellnumber=segmentation_stardist(ensize,"all");}
 	}else {
 			if (segmentationmethod == "thresholding"){cellnumber=segmentation(ensize,true,"all",3000,65535,70,400,0.55);
 }
-			if (segmentationmethod == "pretrained NN"){cellnumber=segmentation_stardist(ensize,"all");}
+			if (segmentationmethod == "pre-trained NN"){cellnumber=segmentation_stardist(ensize,"all");}
 	}
 	epithelialcellnumber=0;
 	LPcellnumber=0;
@@ -1093,7 +1093,7 @@ if (inconsistant == true || emptypositions==true){
 	print("WARNING: Inconsistancy in markers detected !!!");
 }
 if (datatype=="Chipcytometry") {
-	print("Size of the stiched image: "+xsize+" x "+ysize);
+	print("Size of the stitched image: "+xsize+" x "+ysize);
 	print("Number of the first image: "+firsttile);
 	print("Number of positions to be stitched: "+(xsize*ysize));
 	if (correct_shading==true){print("Shading correction was performed for all channels");}
@@ -1128,15 +1128,15 @@ if (segmentationstatus == 1) {
 	print("************************************************************************************");
 	print("------------------------------Segmentation-------------------------------------");
 	print("Method used for segmentation: "+segmentationmethod);
-	if (sepepithel == true) {print("seperate segmentation of epithelial cells and lamina propria");}
-	print("Segmentationmarker: "+segmentationmarker);
+	if (sepepithel == true) {print("separate segmentation of epithelial cells and lamina propria");}
+	print("Segmentation marker: "+segmentationmarker);
 	if (sepepithel == true) {print("epithelial cell marker: "+cytokeratin);}
 	print("Enlargement of ROIs: "+ensize+" pixel");
 	if (segmentationmethod == "thresholding"){
 		if (sepepithel == true) {print("Number of epithelial cells: "+epithelialcellnumber+"; Threshold = ("+threshold_values[0]+"/"+threshold_values[1]+")");}
 		if (sepepithel == true) {print("Number of lamina propria cells: "+LPcellnumber+"; Threshold = ("+threshold_values[2]+"/"+threshold_values[3]+")");}
 	}
-	if (segmentationmethod == "pretrained NN"){
+	if (segmentationmethod == "pre-trained NN"){
 		if (sepepithel == true) {print("Number of epithelial cells: "+epithelialcellnumber);}
 		if (sepepithel == true) {print("Number of lamina propria cells: "+LPcellnumber);}
 	}
