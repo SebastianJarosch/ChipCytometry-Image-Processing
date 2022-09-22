@@ -48,9 +48,11 @@ Dialog.create("Tissue properties");
 Dialog.addString('ChipID', ChipID)
 organisms=newArray("human","mouse");
 tissues=newArray("cells","colon","spleen/LN","stomach","pancreas","breast");
+formats=newArray(".tiff",".png");
 Dialog.setInsets(0, 0, 0);
 Dialog.addChoice("Organism", organisms, "human");
 Dialog.addChoice("Tissue", tissues, "colon");
+Dialog.addChoice("Image format", formats, ".tiff");
 Dialog.setInsets(10, 0, 0);
 if (datatype=="Chipcytometry") {
 	highlight_message("Size of the tissue section", "b");
@@ -79,6 +81,7 @@ Dialog.show();
 ChipID=Dialog.getString();
 organism=Dialog.getChoice();
 tissue=Dialog.getChoice();
+ending=Dialog.getChoice();
 clean=false;
 correct_shading=false;
 if (datatype=="Chipcytometry") {
@@ -361,7 +364,7 @@ if (datatype=="Chipcytometry") {
 					if (next.length > segmentationmarkerpositions.length){
 						errors = ArrayDifference(segmentationmarkerpositions, next);
 						for (l = 0; l < errors.length; l++) {
-							File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr/HDRFL.tiff");
+							File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr/HDRFL"+ending");
 							File.delete(pathraw+folders[i]+"/"+errors[l]+"/hdr");
 							File.delete(pathraw+folders[i]+"/"+errors[l]);
 						}
@@ -370,7 +373,7 @@ if (datatype=="Chipcytometry") {
 						errors = ArrayDifference(segmentationmarkerpositions, next);
 						for (l = 0; l < errors.length; l++) {
 							for (m = 0; m < marker.length; m++) {
-								File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr/HDRFL.tiff");
+								File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr/HDRFL"+ending");
 								File.delete(pathraw+folders[m]+"/"+errors[l]+"/hdr");
 								File.delete(pathraw+folders[m]+"/"+errors[l]);
 							}
@@ -514,22 +517,22 @@ if (datatype=="ChipCytometry") {
 
 		
 		for (i = firsttile; i <= totalpositions; i++) {
-			if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff")) {
-				open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL.tiff");
+			if (i<10 && File.exists(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL"+ending")) {
+				open(pathraw+folders[j]+"/pos0"+i+"/hdr/HDRFL"+ending");
 				run("16-bit");
 				saveAs("Tiff", pathraw+"00"+i);
 				close();
 				print("\\Update: Image renamed successfully: "+i);
 			}
-			if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
-				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+			if (i<100 && i>9 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL"+ending")) {
+				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL"+ending");
 				run("16-bit");
 				saveAs("Tiff", pathraw+"0"+i);
 				close();
 				print("\\Update: Image renamed successfully: "+i);
 			}
-			if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff")) {
-				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL.tiff");
+			if (i<1000 && i>99 && File.exists(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL"+ending")) {
+				open(pathraw+folders[j]+"/pos"+i+"/hdr/HDRFL"+ending");
 				run("16-bit");
 				saveAs("Tiff", pathraw+i);
 				close();
