@@ -1,6 +1,7 @@
 ﻿# ChipCytometry Image Processing
-Macros, data and code used in the Cell Reports Methods publication <i>Jarosch, Koehlen et al. Multiplexed imaging and automated signal quantification in formalin-fixed paraffin-embedded tissues by ChipCytometry</i> (https://doi.org/10.1016/j.crmeth.2021.100104). <br>
-The analysis pipeline was developed for ChipCytometry data but usage with every other imaging data is implemented as well. (see image requirements for other imaging data at the end of this readme file).
+Macros, data and code used in the Cell Reports Methods publication <i>Jarosch, Koehlen et al. "Multiplexed imaging and automated signal quantification in formalin-fixed paraffin-embedded tissues by ChipCytometry"</i> (https://doi.org/10.1016/j.crmeth.2021.100104). <br>
+The analysis pipeline was developed for ChipCytometry data but usage with every other imaging data is implemented as well. (see image requirements for other imaging data at the end of this readme file).<br>
+A detailed description of the analysis pipeline can be found in a step by step protocol at the end of our publication <i>Jarosch, Koehlen et al. "ChipCytometry for multiplexed detection of protein and mRNA markers on human FFPE tissue samples"</i> (https://doi.org/10.1016/j.xpro.2022.101374). <br>
 
 ![Image of Pipeline](https://github.com/SebastianJarosch/ChipCytometry-Image-Processing/blob/master/img/image.jpg)
 
